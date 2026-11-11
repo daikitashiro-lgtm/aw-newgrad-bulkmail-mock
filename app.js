@@ -205,7 +205,7 @@
       return `<tr class="${on ? 'sel' : ''}"><td><span class="box ${on ? 'on' : ''}" data-id="${a.id}"></span></td>
         <td>${lbls}<div class="dt">${fmt(a.date)}</div><div class="nm">${esc(a.name)}</div><div class="mt">${a.age}歳／${a.gender}／${a.school}／${a.pref}</div></td>
         <td><span class="jt">正社員・新卒${a.year}卒</span><div>[${j.id}] ${esc(j.name)}</div>${sub ? `<div class="js">${esc(sub)}</div>` : ''}</td>
-        <td>${mm}</td><td>${st}</td><td class="ops">編集<br>削除</td></tr>`;
+        <td class="cm">${mm}</td><td class="cs">${st}</td><td class="ops">編集<br>削除</td></tr>`;
     }).join('');
     const pages = Math.max(1, Math.ceil(results.length / PER));
     $('pager').innerHTML = results.length > PER

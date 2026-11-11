@@ -113,12 +113,15 @@ tr.sel td { background: #FAFDFF; }
 .dt, .mt, .js { color: #888; font-size: 11px; }
 .nm { color: #1FA9E1; font-weight: 700; font-size: 16px; margin: 2px 0; }
 .jt { display: inline-block; background: #EEE; color: #777; font-size: 10px; padding: 1px 5px; border-radius: 2px; margin-bottom: 4px; }
-.st { width: 140px; height: 36px; border: 1px solid #C9C9C9; border-radius: 3px; display: flex; align-items: center; padding: 0 12px; }
-.st .cv { margin-left: auto; color: #777; font-size: 10px; }
+td.cm { padding-right: 16px; }
+td.cs { padding-left: 0; }
+.st { width: 100%; height: 36px; border: 1px solid #D5D5D5; border-radius: 3px; background: #fff; display: flex; align-items: center; padding: 0 10px; font-size: 12px; color: #555; white-space: nowrap; }
+.st .cv { margin-left: auto; padding-left: 8px; color: #999; font-size: 9px; }
 .st.ng { color: #E5534B; }
-.mm { border-bottom: 1px solid #E0E0E0; padding-bottom: 6px; }
+.mm { display: flex; align-items: flex-start; gap: 6px; min-height: 36px; padding: 8px 10px; border: 1px solid #E3E3E3; border-radius: 3px; background: #FAFAFA; line-height: 1.55; cursor: text; }
+.mm:hover { border-color: #1FA9E1; background: #fff; }
 .mm.ph { color: #AAA; }
-.mm .pen { color: #1FA9E1; margin-right: 4px; }
+.mm .pen { color: #1FA9E1; flex: none; }
 .empty { display: none; padding: 40px; text-align: center; color: #888; }
 .pager { display: flex; justify-content: flex-end; margin-top: 22px; }
 .pager span { width: 34px; height: 34px; border: 1px solid #D5D5D5; margin-left: -1px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #555; background: #fff; cursor: pointer; }
