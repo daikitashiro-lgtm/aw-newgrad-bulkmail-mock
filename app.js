@@ -121,7 +121,10 @@
         if (exc.some((w) => hay.includes(w))) return false;
       }
       if (F.prefs.length && !F.prefs.includes(a.pref)) return false;
-      if (F.date && !within(a.date, Number(F.date))) return false;
+      if (F.date) {
+        const d0 = new Date(a.date.getFullYear(), a.date.getMonth(), a.date.getDate());
+        if (d0 < F.date.from || d0 > (F.date.to || F.date.from)) return false;
+      }
       if (F.statuses.length && !F.statuses.includes(a.status)) return false;
       if (F.notice === '新着応募' && !a.labels.some((l) => l[1] === 'New')) return false;
       if (F.notice === '新着メールあり' && !a.labels.some((l) => l[1] === '新着メール')) return false;
@@ -138,6 +141,8 @@
   }
 
   // ---------- 表示 ----------
+  const ymd = (d) => `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+  const dateText = (r) => (r.to && r.to.getTime() !== r.from.getTime() ? `${ymd(r.from)}〜${ymd(r.to)}` : ymd(r.from));
   const slotLabel = (jid, sid) => (sid === 'none' ? '未予約' : SLOTS[jid].find((s) => s.id === sid).label);
   function courseSummary() {
     const nj = F.jobs.length;
@@ -160,7 +165,7 @@
     $('detail').classList.toggle('open', detailOpen);
     const chip = (btn, val, on, text) => { $(btn).classList.toggle('on', on); $(val).textContent = text; };
     chip('prefBtn', 'prefVal', F.prefs.length > 0, F.prefs.length ? (F.prefs.length > 1 ? `${F.prefs[0]} ほか${F.prefs.length - 1}件` : F.prefs[0]) : 'すべて');
-    chip('dateBtn', 'dateVal', !!F.date, F.date ? `直近${F.date}日` : '指定なし');
+    chip('dateBtn', 'dateVal', !!F.date, F.date ? dateText(F.date) : '指定なし');
     chip('statusBtn', 'statusVal', F.statuses.length > 0, F.statuses.length ? (F.statuses.length > 1 ? `${F.statuses[0]} ほか${F.statuses.length - 1}件` : F.statuses[0]) : 'すべて');
     chip('noticeBtn', 'noticeVal', !!F.notice, F.notice || 'すべて');
   }
@@ -173,7 +178,7 @@
     if (F.kw) tags.push(['kw', `フリーワード：${F.kw}`]);
     if (F.memoEmpty) tags.push(['memoEmpty', 'メモが空の人だけ']);
     if (F.prefs.length) tags.push(['prefs', `現住所：${F.prefs.join('、')}`]);
-    if (F.date) tags.push(['date', `応募日：直近${F.date}日`]);
+    if (F.date) tags.push(['date', `応募日：${dateText(F.date)}`]);
     if (F.statuses.length) tags.push(['statuses', `対応状況：${F.statuses.join('、')}`]);
     if (F.notice) tags.push(['notice', `お知らせ：${F.notice}`]);
     $('applied').innerHTML = tags.length
@@ -290,7 +295,62 @@
   multiDD('yearBtn', 'yearDD', '学生の卒業年度（複数選べます）', ['26', '27', '28', '29'].map((y) => ({ v: y, t: y + '卒' })), () => F.years, (v) => { F.years = v; });
   const prefList = [...new Set(APPS.map((a) => a.pref))];
   multiDD('prefBtn', 'prefDD', '現住所の都道府県（複数選べます）', prefList.map((p) => ({ v: p, t: p })), () => F.prefs, (v) => { F.prefs = v; });
-  singleDD('dateBtn', 'dateDD', [{ v: '', t: '指定なし' }, { v: '7', t: '直近7日' }, { v: '30', t: '直近30日' }], () => F.date, (v) => { F.date = v; });
+  // ---------- 応募日カレンダー（期間指定） ----------
+  const TODAY = new Date(2026, 10, 11);
+  const cal = { y: 2026, m: 10, from: null, to: null };
+  const sameDay = (a, b) => a && b && a.getTime() === b.getTime();
+  function drawCal() {
+    const dd = $('dateDD');
+    const first = new Date(cal.y, cal.m, 1);
+    const start = new Date(cal.y, cal.m, 1 - first.getDay());
+    let cells = '';
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+      const cls = ['cd'];
+      if (d.getMonth() !== cal.m) cls.push('out');
+      if (d.getDay() === 0) cls.push('sun');
+      if (d.getDay() === 6) cls.push('sat');
+      if (sameDay(d, TODAY)) cls.push('today');
+      const to = cal.to || cal.from;
+      if (cal.from && d >= cal.from && d <= to) cls.push('inr');
+      if (sameDay(d, cal.from) || sameDay(d, cal.to)) cls.push('edge');
+      cells += `<span class="${cls.join(' ')}" data-d="${d.getTime()}">${d.getDate()}</span>`;
+    }
+    dd.innerHTML = `<div class="calh"><span class="calclr" data-a="clr">クリア</span><b>${cal.y}年${cal.m + 1}月</b><span class="calnav"><span data-a="prev">‹</span><span data-a="next">›</span></span></div>
+      <div class="calw"><span class="sun">日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span class="sat">土</span></div>
+      <div class="calg">${cells}</div>
+      <div class="calf">${cal.from && !cal.to ? '終了日を選んでください' : '枠外クリックでカレンダーを閉じます'}</div>`;
+  }
+  $('dateBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const dd = $('dateDD');
+    if (dd.classList.contains('open')) { dd.classList.remove('open'); return; }
+    closeDDs(dd);
+    cal.from = F.date ? F.date.from : null; cal.to = F.date ? F.date.to : null;
+    const base = cal.from || TODAY; cal.y = base.getFullYear(); cal.m = base.getMonth();
+    dd.classList.add('cal');
+    drawCal();
+    dd.classList.add('open');
+  });
+  $('dateDD').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const a = e.target.closest('[data-a]');
+    const c = e.target.closest('[data-d]');
+    if (a) {
+      if (a.dataset.a === 'prev') { cal.m--; if (cal.m < 0) { cal.m = 11; cal.y--; } }
+      if (a.dataset.a === 'next') { cal.m++; if (cal.m > 11) { cal.m = 0; cal.y++; } }
+      if (a.dataset.a === 'clr') { cal.from = null; cal.to = null; F.date = ''; $('dateDD').classList.remove('open'); search(); return; }
+      drawCal(); return;
+    }
+    if (c) {
+      const d = new Date(Number(c.dataset.d));
+      if (!cal.from || cal.to) { cal.from = d; cal.to = null; drawCal(); return; }
+      if (d < cal.from) { cal.to = cal.from; cal.from = d; } else cal.to = d;
+      F.date = { from: cal.from, to: cal.to };
+      $('dateDD').classList.remove('open');
+      search();
+    }
+  });
   multiDD('statusBtn', 'statusDD', '対応状況（複数選べます）', STATUSES.map((s) => ({ v: s, t: s })), () => F.statuses, (v) => { F.statuses = v; });
   singleDD('noticeBtn', 'noticeDD', [{ v: '', t: 'すべて' }, ...NOTICES.map((s) => ({ v: s, t: s }))], () => F.notice, (v) => { F.notice = v; });
 
@@ -504,5 +564,10 @@
     if (location.hash === '#modal') { M.season = 'main'; M.focus = '1234570'; M.jobs.add('1234567'); M.slots.add('1234570:none'); renderModal(); }
   }
   if (location.hash === '#modal-all') { openModal(); M.season = 'main'; toggleJob('1234570'); renderModal(); }
-  if (location.hash === '#open') { detailOpen = true; renderSearch(); }
+  if (location.hash === '#open' || location.hash === '#cal') { detailOpen = true; renderSearch(); }
+  if (location.hash === '#cal') {
+    $('dateBtn').click();
+    [2, 8].forEach((d) => document.querySelector(`#dateDD [data-d="${new Date(2026, 10, d).getTime()}"]`).click());
+    $('dateBtn').click();
+  }
 })();
