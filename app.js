@@ -593,13 +593,19 @@
     { id: 't4', name: '書類選考 不合格通知', subj: '【株式会社サンプル】選考結果のご連絡', body: '{{name}}様\n\nこの度は{{company_name}}にご応募いただき、また書類をお送りいただき誠にありがとうございました。\n\n慎重に選考を重ねました結果、誠に残念ながら、今回はご期待に添えない結果となりました。\n\n{{name}}様の今後のご活躍を心よりお祈り申し上げます。\n\n--------------------\n{{company_name}}　採用担当　●●' },
     { id: 't5', name: '面接 合格通知', subj: '【株式会社サンプル】選考結果のご連絡', body: '{{name}}様\n\n先日は面接にお越しいただき、誠にありがとうございました。\n\n慎重に選考を重ねました結果、{{name}}様に内定をお出しすることになりました。\n初回出社日などの詳細は、追ってご連絡いたします。\n\n--------------------\n{{company_name}}　採用担当　●●' },
   ];
-  const ALLOWED = /\.(pdf|docx?|xlsx?|pptx?|jpe?g|png|gif)$/i;
+  const BLOCKED = ['ade', 'adp', 'app', 'bat', 'bin', 'bz2', 'chm', 'cmd', 'com', 'cpl', 'dll', 'dmg', 'docm', 'exe', 'gz', 'hta', 'img', 'ins', 'iso', 'isp', 'jar', 'js', 'jse', 'lib', 'lnk', 'mde', 'msc', 'msi', 'msp', 'mst', 'php', 'pkg', 'pif', 'ps1', 'py', 'rar', 'scr', 'sct', 'sh', 'shb', 'sys', 'tbz', 'tbz2', 'tgz', 'vb', 'vbe', 'vbs', 'vxd', 'wsc', 'wsf', 'wsh', 'zip', '7z'];
+  const MB = 1048576;
+  const LIM = { each: 10 * MB, count: 5, total: 15 * MB };
+  const extOf = (n) => (n.includes('.') ? n.split('.').pop().toLowerCase() : '');
+  const totalSize = () => X.files.reduce((t, f) => t + f.size, 0);
+  const tip = (html) => `<span class="qtip">?<span class="qbox">${html}</span></span>`;
+  const FILE_TIP = tip(`1ファイル10MBまで、1通に5ファイル・合計15MBまで添付できます。<br>次の拡張子のファイルは添付できません。<span class="qext">${BLOCKED.join('、')}</span>`);
   const WD = ['日', '月', '火', '水', '木', '金', '土'];
   const fmtWhen = (d, withYear) => `${withYear ? d.getFullYear() + '/' : ''}${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
   const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const fsize = (b) => (b >= 1048576 ? `${(b / 1048576).toFixed(1)}MB` : `${Math.max(1, Math.round(b / 1024))}KB`);
   const fill = (s, a) => s.replaceAll('{{name}}', a.name).replaceAll('{{company_name}}', COMPANY);
-  const X = { step: 'edit', ids: [], tpl: '', subj: '', body: '', file: null, fileErr: '', when: 'now', date: '', hh: '10', mi: '00', showTo: false, sending: false, at: null };
+  const X = { step: 'edit', ids: [], tpl: '', subj: '', body: '', files: [], fileErr: '', when: 'now', date: '', hh: '10', mi: '00', showTo: false, sending: false, at: null };
 
   function confirmDlg(title, desc, yes, onYes, onNo) {
     $('cdT').textContent = title; $('cdD').textContent = desc; $('cdYes').textContent = yes;
@@ -610,14 +616,14 @@
   }
   function openMail() {
     const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
-    Object.assign(X, { step: 'edit', ids: results.filter((a) => selected.has(a.id)).map((a) => a.id), tpl: '', subj: '', body: '', file: null, fileErr: '', when: 'now', date: isoDay(tomorrow), hh: '10', mi: '00', showTo: false, sending: false, at: null });
+    Object.assign(X, { step: 'edit', ids: results.filter((a) => selected.has(a.id)).map((a) => a.id), tpl: '', subj: '', body: '', files: [], fileErr: '', when: 'now', date: isoDay(tomorrow), hh: '10', mi: '00', showTo: false, sending: false, at: null });
     $('xov').classList.add('open'); $('xmd').classList.add('open');
     renderMail();
   }
   function closeMail() { $('xov').classList.remove('open'); $('xmd').classList.remove('open'); }
   function askCloseMail() {
     if (X.step === 'done') { finishMail(); return; }
-    if (X.subj.trim() || X.body.trim() || X.file) confirmDlg('作成中のメールを破棄しますか？', '入力した件名・本文・添付ファイルは保存されません。', '破棄する', closeMail);
+    if (X.subj.trim() || X.body.trim() || X.files.length) confirmDlg('作成中のメールを破棄しますか？', '入力した件名・本文・添付ファイルは保存されません。', '破棄する', closeMail);
     else closeMail();
   }
   const canConfirm = () => X.subj.trim() && X.body.trim();
@@ -643,7 +649,7 @@
         <div class="mxr"><div class="mxl">テンプレート</div><div class="mxv"><select class="mxsel" id="xTpl"><option value="">テンプレートを使わない</option>${TEMPLATES.map((t) => `<option value="${t.id}" ${X.tpl === t.id ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select><div class="mxnote">選ばなくても送れます。選ぶと、件名と本文をテンプレートの内容に差し替えます。テンプレートは今あるメールテンプレート（中途と共用）です。</div></div></div>
         <div class="mxr"><div class="mxl">件名<span class="mxreq">必須</span></div><div class="mxv"><input class="mxin" id="xSubj" value="${esc(X.subj)}" placeholder="件名を入力してください"></div></div>
         <div class="mxr"><div class="mxl">本文<span class="mxreq">必須</span></div><div class="mxv"><div class="mxtags">置換タグ（押すと本文に入ります）<span class="mxtg" data-tag="{{name}}">{{name}} 応募者名</span><span class="mxtg" data-tag="{{company_name}}">{{company_name}} 企業名</span></div><textarea class="mxta" id="xText" placeholder="本文を入力してください">${esc(X.body)}</textarea></div></div>
-        <div class="mxr"><div class="mxl">添付ファイル</div><div class="mxv"><div class="mxfile"><span class="mxfbtn" id="xFileBtn">ファイルを選択</span>${X.file ? `<span class="mxchip">${esc(X.file.name)}<span class="sz">${fsize(X.file.size)}</span><span class="x" id="xFileRm">✕</span></span>` : '<span class="mxnote" style="margin:0">選択されていません</span>'}</div><div class="mxerr">${esc(X.fileErr)}</div><div class="mxnote">全員に同じファイルを1つ添付できます（任意）。10MBまで。PDF、Word、Excel、PowerPoint、JPEG、PNG、GIF。テンプレートには保存されません。</div></div></div>`;
+        <div class="mxr"><div class="mxl">添付ファイル${FILE_TIP}</div><div class="mxv"><div class="mxfile"><span class="mxfbtn ${X.files.length >= LIM.count ? 'dis' : ''}" id="xFileBtn">ファイルを選択</span><span class="mxnote" style="margin:0">${X.files.length ? `${X.files.length}/${LIM.count}ファイル・合計${fsize(totalSize())}/15MB` : '選択されていません'}</span></div>${X.files.length ? `<div class="mxchips">${X.files.map((f, i) => `<span class="mxchip">${esc(f.name)}<span class="sz">${fsize(f.size)}</span><span class="x" data-frm="${i}">✕</span></span>`).join('')}</div>` : ''}<div class="mxerr">${X.fileErr}</div><div class="mxnote">全員に同じファイルを添付できます（任意）。テンプレートには保存されません。</div></div></div>`;
       foot.innerHTML = '<span class="sp"></span><span class="mbtn" id="xBack">閉じる</span><span class="mbtn pr" id="xNext">内容を確認</span>';
       const sync = () => { $('xNext').classList.toggle('dis', !canConfirm()); };
       $('xSubj').oninput = (e) => { X.subj = e.target.value; sync(); };
@@ -661,7 +667,7 @@
         X.body = ta.value; ta.focus(); ta.selectionStart = ta.selectionEnd = s + g.dataset.tag.length; sync();
       }; });
       $('xFileBtn').onclick = () => { $('xFile').value = ''; $('xFile').click(); };
-      if ($('xFileRm')) $('xFileRm').onclick = () => { X.file = null; X.fileErr = ''; renderMail(); };
+      body.querySelectorAll('[data-frm]').forEach((x) => { x.onclick = () => { X.files.splice(Number(x.dataset.frm), 1); X.fileErr = ''; renderMail(); }; });
       $('xBack').onclick = askCloseMail;
       $('xNext').onclick = () => { if (canConfirm()) { X.step = 'confirm'; renderMail(); } };
       sync();
@@ -675,7 +681,7 @@
           ${apps.length ? '' : '<div class="mxerr">宛先が0件です。戻って選び直してください。</div>'}</div></div>
         <div class="mxr"><div class="mxl flat">件名</div><div class="mxv flat">${first ? esc(fill(X.subj, first)) : esc(X.subj)}</div></div>
         <div class="mxr"><div class="mxl flat">本文</div><div class="mxv flat"><div class="mxprev"><div class="ph">${first ? `プレビュー：宛先の1人目（${esc(first.name)}さん）で置換タグを置き換えて表示しています` : 'プレビュー'}</div><div class="pb">${esc(first ? fill(X.body, first) : X.body)}</div></div></div></div>
-        <div class="mxr"><div class="mxl flat">添付ファイル</div><div class="mxv flat">${X.file ? `<span class="mxchip">${esc(X.file.name)}<span class="sz">${fsize(X.file.size)}</span></span>` : 'なし'}</div></div>
+        <div class="mxr"><div class="mxl flat">添付ファイル</div><div class="mxv flat">${X.files.length ? `<div class="mxchips" style="margin:0">${X.files.map((f) => `<span class="mxchip">${esc(f.name)}<span class="sz">${fsize(f.size)}</span></span>`).join('')}</div>` : 'なし'}</div></div>
         <div class="mxr"><div class="mxl">送信タイミング</div><div class="mxv mxtime">
           <div class="wopt" data-w="now"><span class="rd ${X.when === 'now' ? 'on' : ''}"></span>今すぐ送る</div>
           <div class="wopt" data-w="at"><span class="rd ${X.when === 'at' ? 'on' : ''}"></span>日時を指定して予約する
@@ -702,7 +708,7 @@
     } else {
       $('xTitle').textContent = '受け付けました';
       body.innerHTML = `<div class="mxdone"><div class="h">${X.at ? '送信の予約を受け付けました。' : '送信を受け付けました。'}</div><div class="s">結果は、一覧左下の「一括送付履歴を確認」から確認できます。${X.at ? '予約は、送信予定の5分前まで取り消せます。' : '受け付けた順に送ります。'}</div>
-        <div class="mxkv"><span class="k">件名</span><span>${esc(X.subj)}</span><span class="k">宛先</span><span>${apps.length}件</span><span class="k">送信予定</span><span>${X.at ? fmtWhen(X.at, true) : '今すぐ'}</span><span class="k">添付ファイル</span><span>${X.file ? esc(X.file.name) : 'なし'}</span></div></div>`;
+        <div class="mxkv"><span class="k">件名</span><span>${esc(X.subj)}</span><span class="k">宛先</span><span>${apps.length}件</span><span class="k">送信予定</span><span>${X.at ? fmtWhen(X.at, true) : '今すぐ'}</span><span class="k">添付ファイル</span><span>${X.files.length ? X.files.map((f) => esc(f.name)).join('<br>') : 'なし'}</span></div></div>`;
       foot.innerHTML = '<span class="sp"></span><span class="mbtn" id="xBack">閉じる</span>';
       $('xBack').onclick = finishMail;
     }
@@ -728,17 +734,24 @@
   $('xClose').onclick = askCloseMail;
   $('xov').onclick = askCloseMail;
   $('xFile').onchange = (e) => {
-    const f = e.target.files[0];
-    if (!f) return;
-    if (!ALLOWED.test(f.name)) { X.fileErr = 'この形式のファイルは添付できません。PDF、Word、Excel、PowerPoint、JPEG、PNG、GIFを選んでください。'; renderMail(); return; }
-    if (f.size > 10 * 1048576) { X.fileErr = 'ファイルが10MBを超えています。10MB以下のファイルを選んでください。'; renderMail(); return; }
-    X.file = { name: f.name, size: f.size }; X.fileErr = ''; renderMail();
+    const errs = [];
+    [...e.target.files].forEach((f) => {
+      const ext = extOf(f.name);
+      if (BLOCKED.includes(ext)) errs.push(`「${esc(f.name)}」は添付できない形式です（.${esc(ext)}）。`);
+      else if (f.size > LIM.each) errs.push(`「${esc(f.name)}」は10MBを超えています。`);
+      else if (X.files.length >= LIM.count) errs.push(`「${esc(f.name)}」を追加できません。1通に添付できるのは5ファイルまでです。`);
+      else if (totalSize() + f.size > LIM.total) errs.push(`「${esc(f.name)}」を追加できません。合計15MBを超えます。`);
+      else X.files.push({ name: f.name, size: f.size });
+    });
+    X.fileErr = errs.join('<br>');
+    renderMail();
+    if (errs.length) $('xBody').scrollTop = $('xBody').scrollHeight;
   };
 
   search();
   if (location.hash.startsWith('#mail')) {
     selected = new Set(results.slice(0, 3).map((a) => a.id)); renderTable(); renderBar(); openMail();
-    if (location.hash !== '#mail') { const t = TEMPLATES[0]; Object.assign(X, { tpl: t.id, subj: t.subj, body: t.body, file: { name: '会社説明会のご案内.pdf', size: 482000 } }); }
+    if (location.hash !== '#mail') { const t = TEMPLATES[0]; Object.assign(X, { tpl: t.id, subj: t.subj, body: t.body, files: [{ name: '会社説明会のご案内.pdf', size: 482000 }, { name: 'ES記入用紙.docx', size: 61000 }] }); }
     if (location.hash === '#mail-confirm' || location.hash === '#mail-at' || location.hash === '#mail-done') X.step = 'confirm';
     if (location.hash === '#mail-at' || location.hash === '#mail-done') X.when = 'at';
     if (location.hash === '#mail-done') { X.at = new Date(`${X.date}T10:00:00`); X.step = 'done'; }
