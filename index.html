@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="mockbar">操作モック（ダミーデータ）：新卒応募者一覧の検索・選択から、一括メールの作成・確認・送信の受け付けまで。一括送付履歴とメールの実送信は省略しています。</div>
+  <div class="mockbar">操作モック（ダミーデータ）：新卒応募者一覧の検索・選択から、一括メールの作成・確認・送信の受け付けまで。一括送付履歴まで。メールの実送信はしません。</div>
   <div class="header">
     <div class="logo"><span class="mk"></span>AirWORK<span class="badge">採用管理</span></div>
     <div class="nav"><span>ホーム</span><span>候補者</span><span>応募者</span><span class="on">新卒応募者・説明会</span><span>求人</span><span>有料広告</span><span>その他</span></div>
@@ -58,7 +58,7 @@
     <div class="empty" id="empty">条件に合う応募はありません。</div>
     <div class="pager" id="pager"></div>
     <div class="pinfo" id="pinfo"></div>
-    <span class="histlk" data-toast="一括送付履歴（このモックでは省略しています）">一括送付履歴を確認</span>
+    <span class="histlk" data-hist="1">一括送付履歴を確認</span>
   </div>
 
   <!-- コース・日程枠モーダル -->
@@ -104,6 +104,13 @@
     <div class="mh"><span class="x" id="xClose">×</span><h2 id="xTitle">メールを作成</h2></div>
     <div class="mxb" id="xBody"></div>
     <div class="mf" id="xFoot"></div>
+  </div>
+  <!-- 一括送付履歴 -->
+  <div class="ov" id="hov"></div>
+  <div class="mxd" id="hmd">
+    <div class="mh"><span class="x" id="hClose">×</span><h2>一括送付履歴</h2></div>
+    <div class="mxb" id="hBody"></div>
+    <div class="mf"><span class="sp"></span><span class="mbtn" id="hDone">閉じる</span></div>
   </div>
   <div class="cdov" id="cdov"></div>
   <div class="cdlg" id="cdlg"><div class="t" id="cdT"></div><div class="d" id="cdD"></div><div class="bs"><span class="mbtn" id="cdNo">キャンセル</span><span class="mbtn pr" id="cdYes">OK</span></div></div>

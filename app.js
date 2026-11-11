@@ -240,9 +240,9 @@
     const lines = [];
     const r = MI.rsv;
     if (mail === 'rsv' || mail === 'rsv2') {
-      lines.push(`<div class="sl info"><span class="ic">◷</span><span class="cat">一括メール</span><span class="msg"><b>${r.when}</b> に送信予約中</span><span class="sub">件名：${esc(r.subj)}　宛先：${r.count}件${mail === 'rsv2' ? `　ほかに予約${Math.max(1, MI.nRsv - 1)}件` : ''}</span><span class="sp"></span><span class="lk" data-toast="一括送付履歴（モックでは省略）">一括送付履歴で確認・取り消し</span></div>`);
+      lines.push(`<div class="sl info"><span class="ic">◷</span><span class="cat">一括メール</span><span class="msg"><b>${r.when}</b> に送信予約中</span><span class="sub">件名：${esc(r.subj)}　宛先：${r.count}件${mail === 'rsv2' ? `　ほかに予約${Math.max(1, MI.nRsv - 1)}件` : ''}</span><span class="sp"></span><span class="lk" data-hist="1">一括送付履歴で確認・取り消し</span></div>`);
     } else if (mail === 'run' || mail === 'runrsv') {
-      lines.push(`<div class="sl info"><span class="ic">↻</span><span class="cat">一括メール</span><span class="msg"><b>送信中</b>：${esc(MI.run)}</span>${mail === 'runrsv' ? `<span class="sub">ほかに予約${MI.nRsv}件（${r.when}）</span>` : ''}<span class="sp"></span><span class="lk" data-toast="画面を開き直したときと同じく、状況を取り直します">更新して状況を確認する</span>${mail === 'runrsv' ? '<span class="lk" data-toast="一括送付履歴（モックでは省略）">一括送付履歴</span>' : ''}</div>`);
+      lines.push(`<div class="sl info"><span class="ic">↻</span><span class="cat">一括メール</span><span class="msg"><b>送信中</b>：${esc(MI.run)}</span>${mail === 'runrsv' ? `<span class="sub">ほかに予約${MI.nRsv}件（${r.when}）</span>` : ''}<span class="sp"></span><span class="lk" data-toast="画面を開き直したときと同じく、状況を取り直します">更新して状況を確認する</span>${mail === 'runrsv' ? '<span class="lk" data-hist="1">一括送付履歴</span>' : ''}</div>`);
     }
     if (dl === 'run') lines.push('<div class="sl info"><span class="ic">↻</span><span class="cat">ダウンロード</span><span class="msg">ダウンロードデータを作成しています</span><span class="sp"></span><span class="lk" data-toast="画面を開き直したときと同じく、状況を取り直します">更新して状況を確認する</span></div>');
     if (dl === 'ok') lines.push('<div class="sl ok"><span class="ic">✓</span><span class="cat">ダウンロード</span><span class="msg">ダウンロードデータを作成しました</span><span class="sub">11/12（木）9:44 までダウンロードできます</span><span class="sp"></span><span class="mini" data-toast="ファイルをダウンロードします（モック）">一括ダウンロードする</span></div>');
@@ -707,7 +707,7 @@
       };
     } else {
       $('xTitle').textContent = '受け付けました';
-      body.innerHTML = `<div class="mxdone"><div class="h">${X.at ? '送信の予約を受け付けました。' : '送信を受け付けました。'}</div><div class="s">結果は、一覧左下の「一括送付履歴を確認」から確認できます。${X.at ? '予約は、送信予定の5分前まで取り消せます。' : '受け付けた順に送ります。'}</div>
+      body.innerHTML = `<div class="mxdone"><div class="h">${X.at ? '送信の予約を受け付けました。' : '送信を受け付けました。'}</div><div class="s">結果は、一覧左下の<span class="mxlk" data-hist="1" style="margin:0">「一括送付履歴を確認」</span>から確認できます。${X.at ? '予約は、送信予定の5分前まで取り消せます。' : '受け付けた順に送ります。'}</div>
         <div class="mxkv"><span class="k">件名</span><span>${esc(X.subj)}</span><span class="k">宛先</span><span>${apps.length}件</span><span class="k">送信予定</span><span>${X.at ? fmtWhen(X.at, true) : '今すぐ'}</span><span class="k">添付ファイル</span><span>${X.files.length ? X.files.map((f) => esc(f.name)).join('<br>') : 'なし'}</span></div></div>`;
       foot.innerHTML = '<span class="sp"></span><span class="mbtn" id="xBack">閉じる</span>';
       $('xBack').onclick = finishMail;
@@ -715,22 +715,73 @@
   }
   function finishMail() {
     closeMail();
-    const cur = $('demoMail').value;
-    const hasRsv = ['rsv', 'rsv2', 'runrsv'].includes(cur);
-    const hasRun = ['run', 'runrsv'].includes(cur);
-    if (X.at) {
-      MI.rsv = { when: fmtWhen(X.at), subj: X.subj, count: X.ids.length };
-      MI.nRsv = hasRsv ? MI.nRsv + 1 : 1;
-      $('demoMail').value = hasRun ? 'runrsv' : MI.nRsv > 1 ? 'rsv2' : 'rsv';
-      X.ids.forEach((id) => { const a = APPS.find((x) => x.id === id); if (!a.labels.some((l) => l[1] === '送信予約中')) a.labels.push(['gy', '送信予約中']); });
-    } else {
-      MI.run = X.subj;
-      $('demoMail').value = hasRsv ? 'runrsv' : 'run';
-    }
+    HIST.push({ id: `h${Date.now()}`, st: X.at ? 'rsv' : 'run', at: X.at || new Date(), subj: X.subj, count: X.ids.length, ids: [...X.ids], body: X.body, files: X.files.map((f) => f.name), fail: [] });
+    syncFromHist();
     selected = new Set();
     render();
     toast(X.at ? '送信を予約しました。画面上部に予約中と出ます' : '送信を受け付けました。画面上部に送信中と出ます');
   }
+
+  // ---------- 一括送付履歴 ----------
+  const HIST = [
+    { id: 'h1', st: 'rsv', at: new Date(2026, 11, 1, 10, 0), subj: '【12/5開催】会社説明会のご案内', count: 46, ids: [], body: TEMPLATES[0].body, files: ['会社説明会のご案内.pdf'], fail: [] },
+    { id: 'h2', st: 'run', at: new Date(2026, 10, 11, 17, 30), subj: '【12/5開催】会社説明会のご案内', count: 52, ids: [], body: TEMPLATES[0].body, files: [], fail: [] },
+    { id: 'h3', st: 'done', at: new Date(2026, 10, 10, 11, 25), subj: '明日の会社説明会のご案内', count: 32, ids: [], body: TEMPLATES[1].body.replaceAll('面接', '会社説明会'), files: ['当日のご案内.pdf'], fail: [['青空 三郎', 'メールアドレスの誤り'], ['山田 結衣', '応募者削除']] },
+    { id: 'h4', st: 'done', at: new Date(2026, 10, 6, 9, 0), subj: 'ES提出のお願い', count: 18, ids: [], body: TEMPLATES[2].body.replace('・履歴書（写真付き）\n・職務経歴書', '・エントリーシート'), files: ['ES記入用紙.docx'], fail: [] },
+  ];
+  const ST_LABEL = { rsv: '予約済み', run: '送信中', done: '完了' };
+  const openBodies = new Set();
+  function syncFromHist() {
+    const runs = HIST.filter((h) => h.st === 'run').sort((a, b) => b.at - a.at);
+    const rsvs = HIST.filter((h) => h.st === 'rsv').sort((a, b) => a.at - b.at);
+    if (runs.length) MI.run = runs[0].subj;
+    if (rsvs.length) MI.rsv = { when: fmtWhen(rsvs[0].at), subj: rsvs[0].subj, count: rsvs[0].count };
+    MI.nRsv = rsvs.length;
+    $('demoMail').value = runs.length ? (rsvs.length ? 'runrsv' : 'run') : (rsvs.length ? (rsvs.length > 1 ? 'rsv2' : 'rsv') : 'none');
+    const rsvIds = new Set(rsvs.flatMap((h) => h.ids));
+    APPS.forEach((a) => { a.labels = a.labels.filter((l) => l[1] !== '送信予約中' || a.dummyRsv); if (rsvIds.has(a.id)) a.labels.push(['gy', '送信予約中']); });
+  }
+  APPS.forEach((a) => { if (a.labels.some((l) => l[1] === '送信予約中')) a.dummyRsv = true; });
+  const canCancel = (h) => h.at.getTime() - Date.now() > 5 * 60000;
+  function renderHist() {
+    const rows = [...HIST].sort((a, b) => b.at - a.at);
+    $('hBody').innerHTML = `<div class="mxlead">予約済み・送信中・完了を、新しい順に出します（完了は100件まで）。予約は送信予定の5分前まで取り消せます。宛先は件数だけを出します。未達があったときは、通知用メールアドレスにもお知らせが届きます。</div>
+      <div class="hhead"><span>状態</span><span>配信日時・件名</span><span>宛先</span><span></span></div>
+      ${rows.map((h) => {
+        const nf = h.fail.length;
+        const op = h.st === 'rsv' ? (canCancel(h) ? `<span class="mbtn sm" data-cancel="${h.id}">予約を取り消す</span>` : '<span class="mxnote">取り消せる期限（5分前）を過ぎました</span>')
+          : h.st === 'done' && nf ? `<span class="mbtn sm dl" data-toast="未達者のCSV（応募者ID、氏名、応募求人、応募日、未達の理由）をダウンロードします（モック）">⤓ 未達者をダウンロード</span>` : '';
+        const open = openBodies.has(h.id);
+        return `<div class="hrow">
+          <div><span class="hst ${h.st}">${ST_LABEL[h.st]}</span></div>
+          <div class="hm"><div class="hd">${fmtWhen(h.at, true)}${h.st === 'rsv' ? '　送信予定' : ''}</div><div class="hs">${esc(h.subj)}</div>
+            ${h.files.length ? `<div class="hf">添付：${h.files.map(esc).join('、')}</div>` : ''}
+            ${nf ? `<div class="hfail">未達の学生：${h.fail.map(([n, r]) => `<b>${esc(n)}</b>（${esc(r)}）`).join('、')}</div>` : ''}
+            <span class="mxlk" style="margin:0" data-body="${h.id}">${h.st === 'rsv' ? '送る本文' : '送った本文'}を${open ? '閉じる ▲' : '見る ▼'}</span>
+            ${open ? `<div class="hbody">${esc(h.body)}</div>` : ''}</div>
+          <div class="hn">${h.st === 'done' ? `送付 ${h.count - nf}件${nf ? `<br><span class="red">未達 ${nf}件</span>` : ''}` : `${h.count}件`}</div>
+          <div class="hop">${op}</div></div>`;
+      }).join('')}`;
+  }
+  function openHist() { renderHist(); $('hov').classList.add('open'); $('hmd').classList.add('open'); }
+  function closeHist() { $('hov').classList.remove('open'); $('hmd').classList.remove('open'); }
+  $('hClose').onclick = closeHist; $('hDone').onclick = closeHist; $('hov').onclick = closeHist;
+  $('hBody').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-body]');
+    if (b) { openBodies.has(b.dataset.body) ? openBodies.delete(b.dataset.body) : openBodies.add(b.dataset.body); renderHist(); return; }
+    const c = e.target.closest('[data-cancel]');
+    if (c) {
+      const h = HIST.find((x) => x.id === c.dataset.cancel);
+      confirmDlg('予約を取り消しますか？', `「${h.subj}」（${fmtWhen(h.at, true)} 送信予定・${h.count}件）の予約を取り消します。取り消したメールは送られません。`, '取り消す', () => {
+        HIST.splice(HIST.indexOf(h), 1); syncFromHist(); render(); renderHist(); toast('予約を取り消しました');
+      });
+    }
+  });
+  document.body.addEventListener('click', (e) => {
+    if (!e.target.closest('[data-hist]')) return;
+    if ($('xmd').classList.contains('open') && X.step === 'done') finishMail();
+    openHist();
+  });
   $('xClose').onclick = askCloseMail;
   $('xov').onclick = askCloseMail;
   $('xFile').onchange = (e) => {
@@ -757,6 +808,7 @@
     if (location.hash === '#mail-done') { X.at = new Date(`${X.date}T10:00:00`); X.step = 'done'; }
     renderMail();
   }
+  if (location.hash === '#hist') openHist();
   if (location.hash === '#modal' || location.hash === '#modal-is') {
     openModal();
     if (location.hash === '#modal') { M.season = 'main'; M.focus = '1234570'; M.jobs.add('1234567'); M.slots.add('1234570:none'); renderModal(); }
