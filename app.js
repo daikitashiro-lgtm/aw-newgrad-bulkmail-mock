@@ -114,7 +114,11 @@
       if (F.kw) {
         const j = jobById(a.job);
         const hay = [a.memo, a.name, j.name, j.id, j.place, '正社員', '新卒'].join(' ');
-        if (!F.kw.split(/\s+/).every((w) => hay.includes(w))) return false;
+        const words = F.kw.split(/[\s\u3000]+/).filter(Boolean);
+        const inc = words.filter((w) => !/^[-－]/.test(w));
+        const exc = words.filter((w) => /^[-－]./.test(w)).map((w) => w.slice(1));
+        if (!inc.every((w) => hay.includes(w))) return false;
+        if (exc.some((w) => hay.includes(w))) return false;
       }
       if (F.prefs.length && !F.prefs.includes(a.pref)) return false;
       if (F.date && !within(a.date, Number(F.date))) return false;
