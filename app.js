@@ -93,7 +93,7 @@
   const jobById = (id) => JOBS.find((j) => j.id === id);
 
   // ---------- 状態 ----------
-  const F = { years: [], jobs: [], slots: [], memo: '', kw: '', memoEmpty: false, prefs: [], date: '', statuses: [], notice: '' };
+  const F = { years: [], jobs: [], slots: [], kw: '', memoEmpty: false, prefs: [], date: '', statuses: [], notice: '' };
   let detailOpen = false;
   let page = 1;
   const PER = 30;
@@ -111,10 +111,9 @@
         if (!hitJob && !hitSlot) return false;
       }
       if (F.memoEmpty && a.memo) return false;
-      if (F.memo && !F.memo.split(/\s+/).every((w) => a.memo.includes(w))) return false;
       if (F.kw) {
         const j = jobById(a.job);
-        const hay = [a.name, j.name, j.id, j.place, '正社員', '新卒'].join(' ');
+        const hay = [a.memo, a.name, j.name, j.id, j.place, '正社員', '新卒'].join(' ');
         if (!F.kw.split(/\s+/).every((w) => hay.includes(w))) return false;
       }
       if (F.prefs.length && !F.prefs.includes(a.pref)) return false;
@@ -152,8 +151,6 @@
     const cs = courseSummary();
     $('courseVal').innerHTML = cs ? `<span class="on-v">${esc(cs)}</span>` : 'すべて';
     $('memoEmptyBox').classList.toggle('on', F.memoEmpty);
-    $('memoBox').classList.toggle('dis', F.memoEmpty);
-    $('memoIn').disabled = F.memoEmpty;
     const detailCount = [F.prefs.length, F.date, F.statuses.length, F.notice].filter(Boolean).length;
     $('moreBtn').textContent = detailOpen ? '詳しい条件を閉じる ▲' : `詳しい条件${detailCount ? `（${detailCount}件適用中）` : ''} ▼`;
     $('detail').classList.toggle('open', detailOpen);
@@ -169,8 +166,7 @@
     if (F.years.length) tags.push(['years', `卒業年度：${F.years.map((y) => y + '卒').join('、')}`]);
     F.jobs.forEach((j) => tags.push([`job:${j}`, jobById(j).name]));
     F.slots.forEach((s) => { const [jid, sid] = s.split(':'); tags.push([`slot:${s}`, `${jobById(jid).name}：${slotLabel(jid, sid)}`]); });
-    if (F.memo) tags.push(['memo', `メモ：${F.memo}`]);
-    if (F.kw) tags.push(['kw', `応募者名・求人：${F.kw}`]);
+    if (F.kw) tags.push(['kw', `フリーワード：${F.kw}`]);
     if (F.memoEmpty) tags.push(['memoEmpty', 'メモが空の人だけ']);
     if (F.prefs.length) tags.push(['prefs', `現住所：${F.prefs.join('、')}`]);
     if (F.date) tags.push(['date', `応募日：直近${F.date}日`]);
@@ -295,17 +291,13 @@
   singleDD('noticeBtn', 'noticeDD', [{ v: '', t: 'すべて' }, ...NOTICES.map((s) => ({ v: s, t: s }))], () => F.notice, (v) => { F.notice = v; });
 
   // ---------- 検索欄 ----------
-  $('searchBtn').onclick = () => { F.memo = F.memoEmpty ? '' : $('memoIn').value.trim(); F.kw = $('kwIn').value.trim(); search(); };
-  ['memoIn', 'kwIn'].forEach((id) => $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') $('searchBtn').onclick(); }));
-  $('memoEmptyLbl').onclick = () => {
-    F.memoEmpty = !F.memoEmpty;
-    if (F.memoEmpty) { $('memoIn').value = ''; F.memo = ''; }
-    search();
-  };
+  $('searchBtn').onclick = () => { F.kw = $('kwIn').value.trim(); search(); };
+  $('kwIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('searchBtn').onclick(); });
+  $('memoEmptyLbl').onclick = () => { F.memoEmpty = !F.memoEmpty; search(); };
   $('moreBtn').onclick = () => { detailOpen = !detailOpen; renderSearch(); };
   function clearAll() {
-    Object.assign(F, { years: [], jobs: [], slots: [], memo: '', kw: '', memoEmpty: false, prefs: [], date: '', statuses: [], notice: '' });
-    $('memoIn').value = ''; $('kwIn').value = '';
+    Object.assign(F, { years: [], jobs: [], slots: [], kw: '', memoEmpty: false, prefs: [], date: '', statuses: [], notice: '' });
+    $('kwIn').value = '';
     search();
   }
   $('clearBtn').onclick = clearAll;
@@ -315,7 +307,6 @@
     if (!k) return;
     if (k.startsWith('job:')) F.jobs = F.jobs.filter((j) => j !== k.slice(4));
     else if (k.startsWith('slot:')) F.slots = F.slots.filter((s) => s !== k.slice(5));
-    else if (k === 'memo') { F.memo = ''; $('memoIn').value = ''; }
     else if (k === 'kw') { F.kw = ''; $('kwIn').value = ''; }
     else if (k === 'memoEmpty') F.memoEmpty = false;
     else if (k === 'date' || k === 'notice') F[k] = '';
