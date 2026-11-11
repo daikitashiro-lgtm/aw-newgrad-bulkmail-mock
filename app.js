@@ -202,7 +202,7 @@
       const st = a.status === '未対応' ? '<div class="st ng">⚠ 未対応<span class="cv">▼</span></div>' : `<div class="st">${a.status}<span class="cv">▼</span></div>`;
       const mm = a.memo ? `<div class="mm"><span class="pen">✎</span>${esc(a.memo)}</div>` : '<div class="mm ph"><span class="pen">✎</span>メモを入力できます</div>';
       const on = selected.has(a.id);
-      return `<tr class="${on ? 'sel' : ''}"><td><span class="box ${on ? 'on' : ''}" data-id="${a.id}"></span></td>
+      return `<tr class="${on ? 'rsel' : ''}"><td><span class="box ${on ? 'on' : ''}" data-id="${a.id}"></span></td>
         <td>${lbls}<div class="dt">${fmt(a.date)}</div><div class="nm">${esc(a.name)}</div><div class="mt">${a.age}歳／${a.gender}／${a.school}／${a.pref}</div></td>
         <td><span class="jt">正社員・新卒${a.year}卒</span><div>[${j.id}] ${esc(j.name)}</div>${sub ? `<div class="js">${esc(sub)}</div>` : ''}</td>
         <td class="cm">${mm}</td><td class="cs">${st}</td><td class="ops">編集<br>削除</td></tr>`;
@@ -536,7 +536,7 @@
     list.forEach((s) => {
       if (s.mon !== mon) { mon = s.mon; html += `<div class="mon">${mon}${s.past ? '（開催済み）' : ''}</div>`; }
       const n = apps.filter((a) => a.slot === s.id).length;
-      html += row(s.id, s.label, s.venue, `予約 ${n}件／定員 ${s.cap}${n >= s.cap ? '<span class="full">満席</span>' : ''}`);
+      html += row(s.id, s.label, s.venue, `予約 ${n}件／定員 ${s.cap}${n >= s.cap ? '<span class="fullb">満席</span>' : ''}`);
     });
     r.innerHTML = `<div class="rh"><div class="t">${esc(j.name)} の日程枠<span>（これから ${up.length}枠・開催済み ${past.length}枠）</span></div><span class="all" data-allslots="1">${jobOn ? 'すべての日程枠の選択を外す' : 'すべての日程枠を選ぶ'}</span></div>
       <div class="slots">${html}</div>${past.length ? `<div class="past" data-past="1">${M.showPast ? '開催済みの日程枠を隠す ▲' : `開催済みの日程枠（${past.length}枠）を表示 ▼`}</div>` : ''}`;
