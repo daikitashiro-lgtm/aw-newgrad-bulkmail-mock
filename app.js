@@ -94,7 +94,7 @@
   const jobById = (id) => JOBS.find((j) => j.id === id);
 
   // ---------- 状態 ----------
-  const F = { years: [], jobs: [], slots: [], kw: '', memoEmpty: false, prefs: [], date: '', statuses: [], notice: '' };
+  const F = { years: [], jobs: [], slots: [], kw: '', memoEmpty: false, date: '', statuses: [], notice: '' };
   let detailOpen = false;
   let page = 1;
   const PER = 30;
@@ -121,7 +121,6 @@
         if (!inc.every((w) => hay.includes(w))) return false;
         if (exc.some((w) => hay.includes(w))) return false;
       }
-      if (F.prefs.length && !F.prefs.includes(a.pref)) return false;
       if (F.date) {
         const d0 = new Date(a.date.getFullYear(), a.date.getMonth(), a.date.getDate());
         if (d0 < F.date.from || d0 > (F.date.to || F.date.from)) return false;
@@ -162,11 +161,10 @@
     const cs = courseSummary();
     $('courseVal').innerHTML = cs ? `<span class="on-v">${esc(cs)}</span>` : 'すべて';
     $('memoEmptyBox').classList.toggle('on', F.memoEmpty);
-    const detailCount = [F.prefs.length, F.date, F.statuses.length, F.notice].filter(Boolean).length;
+    const detailCount = [F.date, F.statuses.length, F.notice].filter(Boolean).length;
     $('moreBtn').textContent = detailOpen ? '詳しい条件を閉じる ▲' : `詳しい条件${detailCount ? `（${detailCount}件適用中）` : ''} ▼`;
     $('detail').classList.toggle('open', detailOpen);
     const chip = (btn, val, on, text) => { $(btn).classList.toggle('on', on); $(val).textContent = text; };
-    chip('prefBtn', 'prefVal', F.prefs.length > 0, F.prefs.length ? (F.prefs.length > 1 ? `${F.prefs[0]} ほか${F.prefs.length - 1}件` : F.prefs[0]) : 'すべて');
     chip('dateBtn', 'dateVal', !!F.date, F.date ? dateText(F.date) : '指定なし');
     chip('statusBtn', 'statusVal', F.statuses.length > 0, F.statuses.length ? (F.statuses.length > 1 ? `${F.statuses[0]} ほか${F.statuses.length - 1}件` : F.statuses[0]) : 'すべて');
     chip('noticeBtn', 'noticeVal', !!F.notice, F.notice || '新着／面接すべて');
@@ -179,7 +177,6 @@
     F.slots.forEach((s) => { const [jid, sid] = s.split(':'); tags.push([`slot:${s}`, `${jobById(jid).name}：${slotLabel(jid, sid)}`]); });
     if (F.kw) tags.push(['kw', `フリーワード：${F.kw}`]);
     if (F.memoEmpty) tags.push(['memoEmpty', 'メモが空の人だけ']);
-    if (F.prefs.length) tags.push(['prefs', `現住所：${F.prefs.join('、')}`]);
     if (F.date) tags.push(['date', `応募日：${dateText(F.date)}`]);
     if (F.statuses.length) tags.push(['statuses', `対応状況：${F.statuses.join('、')}`]);
     if (F.notice) tags.push(['notice', `お知らせ：${F.notice}`]);
@@ -296,31 +293,6 @@
   document.addEventListener('click', () => closeDDs());
 
   multiDD('yearBtn', 'yearDD', '学生の卒業年度（複数選べます）', ['26', '27', '28', '29'].map((y) => ({ v: y, t: y + '卒' })), () => F.years, (v) => { F.years = v; });
-  // ---------- 現住所の設定モーダル（自動アプローチの対象条件と同じ） ----------
-  const REGIONS = [
-    ['北海道・東北', ['北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県']],
-    ['関東', ['東京都', '神奈川県', '埼玉県', '千葉県', '茨城県', '栃木県', '群馬県']],
-    ['甲信越・北陸', ['新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県']],
-    ['東海', ['岐阜県', '静岡県', '愛知県', '三重県']],
-    ['関西', ['大阪府', '京都府', '兵庫県', '奈良県', '滋賀県', '和歌山県']],
-    ['中国・四国', ['鳥取県', '島根県', '岡山県', '広島県', '山口県', '徳島県', '香川県', '愛媛県', '高知県']],
-    ['九州・沖縄', ['福岡県', '佐賀県', '長崎県', '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県']],
-  ];
-  const PREF_ORDER = REGIONS.flatMap((r) => r[1]);
-  let prefTmp = new Set();
-  function drawPref() {
-    $('pBody').innerHTML = REGIONS.map(([rn, ps]) => `<div class="preg"><div class="rn">${rn}</div><div class="ps">${ps.map((p) => `<label data-p="${p}"><span class="box ${prefTmp.has(p) ? 'on' : ''}"></span>${p}</label>`).join('')}</div></div>`).join('');
-  }
-  function closePref() { $('pov').classList.remove('open'); $('pmd').classList.remove('open'); }
-  $('prefBtn').addEventListener('click', (e) => {
-    e.stopPropagation(); closeDDs();
-    prefTmp = new Set(F.prefs); drawPref();
-    $('pov').classList.add('open'); $('pmd').classList.add('open');
-  });
-  $('pBody').addEventListener('click', (e) => { const l = e.target.closest('[data-p]'); if (!l) return; const p = l.dataset.p; prefTmp.has(p) ? prefTmp.delete(p) : prefTmp.add(p); drawPref(); });
-  $('pClose').onclick = closePref;
-  $('pov').onclick = closePref;
-  $('pSave').onclick = () => { F.prefs = PREF_ORDER.filter((p) => prefTmp.has(p)); closePref(); search(); };
   // ---------- 応募日カレンダー（期間指定） ----------
   const TODAY = new Date(2026, 10, 11);
   const cal = { y: 2026, m: 10, from: null, to: null };
@@ -386,7 +358,7 @@
   $('memoEmptyLbl').onclick = () => { F.memoEmpty = !F.memoEmpty; search(); };
   $('moreBtn').onclick = () => { detailOpen = !detailOpen; renderSearch(); };
   function clearAll() {
-    Object.assign(F, { years: [], jobs: [], slots: [], kw: '', memoEmpty: false, prefs: [], date: '', statuses: [], notice: '' });
+    Object.assign(F, { years: [], jobs: [], slots: [], kw: '', memoEmpty: false, date: '', statuses: [], notice: '' });
     $('kwIn').value = '';
     search();
   }
@@ -820,7 +792,6 @@
   }
   if (location.hash === '#modal-all') { openModal(); M.season = 'main'; toggleJob('1234570'); renderModal(); }
   if (location.hash === '#open' || location.hash === '#cal') { detailOpen = true; renderSearch(); }
-  if (location.hash === '#pref') { detailOpen = true; renderSearch(); F.prefs = ['東京都', '神奈川県', '埼玉県']; $('prefBtn').click(); }
   if (location.hash === '#cal') {
     $('dateBtn').click();
     [2, 8].forEach((d) => document.querySelector(`#dateDD [data-d="${new Date(2026, 10, d).getTime()}"]`).click());

@@ -222,18 +222,6 @@ td.cs { padding-left: 0; }
 .calf { text-align: center; color: #888; font-size: 11px; margin-top: 8px; }
 .chip .cv.calic { color: #1FA9E1; font-size: 14px; }
 
-/* 現住所の設定モーダル */
-.pmd { display: none; position: fixed; left: 50%; top: 40px; transform: translateX(-50%); width: 730px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,.3); z-index: 51; }
-.pmd.open { display: block; }
-.pbody { padding: 26px; }
-.preg { display: flex; border-top: 1px solid #D5D5D5; padding: 8px 0; }
-.preg:last-child { border-bottom: 1px solid #D5D5D5; }
-.preg .rn { width: 116px; white-space: nowrap; flex: none; padding: 6px 12px; border-right: 1px solid #D5D5D5; font-size: 13px; color: #444; }
-.preg .ps { display: grid; grid-template-columns: repeat(6, 86px); padding-left: 14px; row-gap: 4px; }
-.preg label { display: flex; align-items: center; gap: 7px; height: 28px; font-size: 12px; color: #444; cursor: pointer; white-space: nowrap; }
-.pfoot { border-top: 1px solid #E0E0E0; padding: 12px 16px; display: flex; justify-content: flex-end; }
-.psave { height: 36px; padding: 0 16px; background: #1FA9E1; color: #fff; font-weight: 700; border-radius: 3px; display: inline-flex; align-items: center; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,.15); }
-.pmd .mh h2 { font-size: 18px; }
 
 /* 一括メール（作成・確認・受け付け） */
 .mxd { display: none; position: fixed; left: 50%; top: 24px; transform: translateX(-50%); width: 900px; max-height: calc(100vh - 48px); background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,.3); z-index: 51; flex-direction: column; }
