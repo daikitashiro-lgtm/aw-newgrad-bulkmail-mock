@@ -233,15 +233,16 @@
       <div class="primary ${cnt ? '' : 'dis'}" id="sendBtn">${cnt ? `選択した${cnt}件にメールを送る` : '選択した応募にメールを送る'}</div>`;
   }
 
+  const MI = { run: '【12/5開催】会社説明会のご案内', rsv: { when: '12/1（月）10:00', subj: '【12/5開催】会社説明会のご案内', count: 46 }, nRsv: 1 };
   function renderAlerts() {
     const mail = $('demoMail').value;
     const dl = $('demoDl').value;
     const lines = [];
-    const subj = '【12/5開催】会社説明会のご案内';
+    const r = MI.rsv;
     if (mail === 'rsv' || mail === 'rsv2') {
-      lines.push(`<div class="sl info"><span class="ic">◷</span><span class="cat">一括メール</span><span class="msg"><b>12/1（月）10:00</b> に送信予約中</span><span class="sub">件名：${subj}　宛先：46件${mail === 'rsv2' ? '　ほかに予約1件' : ''}</span><span class="sp"></span><span class="lk" data-toast="一括送付履歴（モックでは省略）">一括送付履歴で確認・取り消し</span></div>`);
+      lines.push(`<div class="sl info"><span class="ic">◷</span><span class="cat">一括メール</span><span class="msg"><b>${r.when}</b> に送信予約中</span><span class="sub">件名：${esc(r.subj)}　宛先：${r.count}件${mail === 'rsv2' ? `　ほかに予約${Math.max(1, MI.nRsv - 1)}件` : ''}</span><span class="sp"></span><span class="lk" data-toast="一括送付履歴（モックでは省略）">一括送付履歴で確認・取り消し</span></div>`);
     } else if (mail === 'run' || mail === 'runrsv') {
-      lines.push(`<div class="sl info"><span class="ic">↻</span><span class="cat">一括メール</span><span class="msg"><b>送信中</b>：${subj}</span>${mail === 'runrsv' ? '<span class="sub">ほかに予約1件（12/1（月）10:00）</span>' : ''}<span class="sp"></span><span class="lk" data-toast="画面を開き直したときと同じく、状況を取り直します">更新して状況を確認する</span>${mail === 'runrsv' ? '<span class="lk" data-toast="一括送付履歴（モックでは省略）">一括送付履歴</span>' : ''}</div>`);
+      lines.push(`<div class="sl info"><span class="ic">↻</span><span class="cat">一括メール</span><span class="msg"><b>送信中</b>：${esc(MI.run)}</span>${mail === 'runrsv' ? `<span class="sub">ほかに予約${MI.nRsv}件（${r.when}）</span>` : ''}<span class="sp"></span><span class="lk" data-toast="画面を開き直したときと同じく、状況を取り直します">更新して状況を確認する</span>${mail === 'runrsv' ? '<span class="lk" data-toast="一括送付履歴（モックでは省略）">一括送付履歴</span>' : ''}</div>`);
     }
     if (dl === 'run') lines.push('<div class="sl info"><span class="ic">↻</span><span class="cat">ダウンロード</span><span class="msg">ダウンロードデータを作成しています</span><span class="sp"></span><span class="lk" data-toast="画面を開き直したときと同じく、状況を取り直します">更新して状況を確認する</span></div>');
     if (dl === 'ok') lines.push('<div class="sl ok"><span class="ic">✓</span><span class="cat">ダウンロード</span><span class="msg">ダウンロードデータを作成しました</span><span class="sub">11/12（木）9:44 までダウンロードできます</span><span class="sp"></span><span class="mini" data-toast="ファイルをダウンロードします（モック）">一括ダウンロードする</span></div>');
@@ -430,7 +431,7 @@
     } else if (t.id === 'selClear') {
       selected = new Set();
     } else if (t.id === 'sendBtn') {
-      if (selected.size) toast(`メール作成へ進みます（${selected.size}件）。このモックでは省略しています`);
+      if (selected.size) openMail();
       return;
     } else return;
     renderTable(); renderBar();
@@ -443,7 +444,7 @@
   });
   $('dlBtn').onclick = () => { if (!$('dlBtn').classList.contains('dis')) { $('demoDl').value = 'run'; renderAlerts(); toast('ダウンロードデータの作成を始めました'); } };
   document.body.addEventListener('click', (e) => { const t = e.target.closest('[data-toast]'); if (t) toast(t.dataset.toast); });
-  $('demoMail').onchange = renderAlerts;
+  $('demoMail').onchange = () => { MI.nRsv = $('demoMail').value === 'rsv2' ? 2 : 1; renderAlerts(); };
   $('demoDl').onchange = renderAlerts;
 
   // ---------- コース・日程枠モーダル ----------
@@ -583,7 +584,166 @@
     renderModal();
   };
 
+  // ---------- 一括メール（作成 → 送信内容の確認 → 受け付け） ----------
+  const COMPANY = '株式会社サンプル';
+  const TEMPLATES = [
+    { id: 't1', name: '会社説明会のご案内（予約のお願い）', subj: '【株式会社サンプル】会社説明会のご案内', body: '{{name}}様\n\nこの度は{{company_name}}にご応募いただき、誠にありがとうございます。\n採用担当の●●です。\n\n下記の日程で会社説明会を開催いたします。\nご都合のよい日程を、マイページからご予約ください。\n\n【日程】\n・12/5（土）10:00〜11:00　東京都・本社\n・12/12（土）10:00〜11:00　大阪府・大阪支社\n・12/19（土）13:00〜14:00　オンライン\n\nお会いできることを楽しみにしております。\n\n--------------------\n{{company_name}}　採用担当　●●\nTEL：●●-●●●●-●●●●' },
+    { id: 't2', name: '面接日 前日リマインド', subj: '【株式会社サンプル】明日の面接について', body: '{{name}}様\n\n{{company_name}}採用担当の●●です。\n明日の面接につきまして、確認のご連絡です。\n\n【日時】●月●日（●）●●:●●〜\n【場所】●●●●\n【持ち物】筆記用具\n\n当日体調不良などでお越しになれなくなった場合は、ご一報くださいませ。\n明日、お会いできることを楽しみにしております。\n\n--------------------\n{{company_name}}　採用担当　●●' },
+    { id: 't3', name: '各種書類送付依頼', subj: '【株式会社サンプル】書類送付のお願い', body: '{{name}}様\n\nこの度は{{company_name}}にご応募いただき、誠にありがとうございます。\n選考にあたり、下記の書類をご送付ください。\n\n・履歴書（写真付き）\n・職務経歴書\n\n【締切】●月●日（●）\n【送付先】●●●●\n\nご不明な点がございましたら、お気軽にお問い合わせください。\n\n--------------------\n{{company_name}}　採用担当　●●' },
+    { id: 't4', name: '書類選考 不合格通知', subj: '【株式会社サンプル】選考結果のご連絡', body: '{{name}}様\n\nこの度は{{company_name}}にご応募いただき、また書類をお送りいただき誠にありがとうございました。\n\n慎重に選考を重ねました結果、誠に残念ながら、今回はご期待に添えない結果となりました。\n\n{{name}}様の今後のご活躍を心よりお祈り申し上げます。\n\n--------------------\n{{company_name}}　採用担当　●●' },
+    { id: 't5', name: '面接 合格通知', subj: '【株式会社サンプル】選考結果のご連絡', body: '{{name}}様\n\n先日は面接にお越しいただき、誠にありがとうございました。\n\n慎重に選考を重ねました結果、{{name}}様に内定をお出しすることになりました。\n初回出社日などの詳細は、追ってご連絡いたします。\n\n--------------------\n{{company_name}}　採用担当　●●' },
+  ];
+  const ALLOWED = /\.(pdf|docx?|xlsx?|pptx?|jpe?g|png|gif)$/i;
+  const WD = ['日', '月', '火', '水', '木', '金', '土'];
+  const fmtWhen = (d, withYear) => `${withYear ? d.getFullYear() + '/' : ''}${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+  const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const fsize = (b) => (b >= 1048576 ? `${(b / 1048576).toFixed(1)}MB` : `${Math.max(1, Math.round(b / 1024))}KB`);
+  const fill = (s, a) => s.replaceAll('{{name}}', a.name).replaceAll('{{company_name}}', COMPANY);
+  const X = { step: 'edit', ids: [], tpl: '', subj: '', body: '', file: null, fileErr: '', when: 'now', date: '', hh: '10', mi: '00', showTo: false, sending: false, at: null };
+
+  function confirmDlg(title, desc, yes, onYes, onNo) {
+    $('cdT').textContent = title; $('cdD').textContent = desc; $('cdYes').textContent = yes;
+    $('cdov').classList.add('open'); $('cdlg').classList.add('open');
+    const close = () => { $('cdov').classList.remove('open'); $('cdlg').classList.remove('open'); };
+    $('cdYes').onclick = () => { close(); onYes(); };
+    $('cdNo').onclick = () => { close(); if (onNo) onNo(); };
+  }
+  function openMail() {
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+    Object.assign(X, { step: 'edit', ids: results.filter((a) => selected.has(a.id)).map((a) => a.id), tpl: '', subj: '', body: '', file: null, fileErr: '', when: 'now', date: isoDay(tomorrow), hh: '10', mi: '00', showTo: false, sending: false, at: null });
+    $('xov').classList.add('open'); $('xmd').classList.add('open');
+    renderMail();
+  }
+  function closeMail() { $('xov').classList.remove('open'); $('xmd').classList.remove('open'); }
+  function askCloseMail() {
+    if (X.step === 'done') { finishMail(); return; }
+    if (X.subj.trim() || X.body.trim() || X.file) confirmDlg('作成中のメールを破棄しますか？', '入力した件名・本文・添付ファイルは保存されません。', '破棄する', closeMail);
+    else closeMail();
+  }
+  const canConfirm = () => X.subj.trim() && X.body.trim();
+  function schedErr() {
+    if (X.when !== 'at') return '';
+    const at = new Date(`${X.date}T${X.hh}:${X.mi}:00`);
+    const now = new Date();
+    const max = new Date(now.getTime() + 7 * 86400000);
+    if (Number.isNaN(at.getTime())) return '日時を選んでください。';
+    if (at <= now) return '過去の日時は選べません。';
+    if (at > max) return '予約できるのは7日後までです。';
+    return '';
+  }
+
+  function renderMail() {
+    const body = $('xBody'); const foot = $('xFoot');
+    $('xmd').classList.toggle('narrow', X.step === 'done');
+    const apps = X.ids.map((id) => APPS.find((a) => a.id === id));
+    if (X.step === 'edit') {
+      $('xTitle').textContent = 'メールを作成';
+      body.innerHTML = `
+        <div class="mxr"><div class="mxl flat">宛先</div><div class="mxv flat"><span class="mxcnt"><b>${apps.length}</b>件</span><div class="mxnote">選んだ応募ごとに1通ずつ送ります。同じ学生の複数の応募を選んでいるときは、その学生に複数通届きます。</div></div></div>
+        <div class="mxr"><div class="mxl">テンプレート</div><div class="mxv"><select class="mxsel" id="xTpl"><option value="">テンプレートを使わない</option>${TEMPLATES.map((t) => `<option value="${t.id}" ${X.tpl === t.id ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select><div class="mxnote">選ばなくても送れます。選ぶと、件名と本文をテンプレートの内容に差し替えます。テンプレートは今あるメールテンプレート（中途と共用）です。</div></div></div>
+        <div class="mxr"><div class="mxl">件名<span class="mxreq">必須</span></div><div class="mxv"><input class="mxin" id="xSubj" value="${esc(X.subj)}" placeholder="件名を入力してください"></div></div>
+        <div class="mxr"><div class="mxl">本文<span class="mxreq">必須</span></div><div class="mxv"><div class="mxtags">置換タグ（押すと本文に入ります）<span class="mxtg" data-tag="{{name}}">{{name}} 応募者名</span><span class="mxtg" data-tag="{{company_name}}">{{company_name}} 企業名</span></div><textarea class="mxta" id="xText" placeholder="本文を入力してください">${esc(X.body)}</textarea></div></div>
+        <div class="mxr"><div class="mxl">添付ファイル</div><div class="mxv"><div class="mxfile"><span class="mxfbtn" id="xFileBtn">ファイルを選択</span>${X.file ? `<span class="mxchip">${esc(X.file.name)}<span class="sz">${fsize(X.file.size)}</span><span class="x" id="xFileRm">✕</span></span>` : '<span class="mxnote" style="margin:0">選択されていません</span>'}</div><div class="mxerr">${esc(X.fileErr)}</div><div class="mxnote">全員に同じファイルを1つ添付できます（任意）。10MBまで。PDF、Word、Excel、PowerPoint、JPEG、PNG、GIF。テンプレートには保存されません。</div></div></div>`;
+      foot.innerHTML = '<span class="sp"></span><span class="mbtn" id="xBack">閉じる</span><span class="mbtn pr" id="xNext">内容を確認</span>';
+      const sync = () => { $('xNext').classList.toggle('dis', !canConfirm()); };
+      $('xSubj').oninput = (e) => { X.subj = e.target.value; sync(); };
+      $('xText').oninput = (e) => { X.body = e.target.value; sync(); };
+      $('xTpl').onchange = (e) => {
+        const t = TEMPLATES.find((x) => x.id === e.target.value);
+        if (!t) { X.tpl = ''; return; }
+        const apply = () => { X.tpl = t.id; X.subj = t.subj; X.body = t.body; renderMail(); };
+        if (X.body.trim()) confirmDlg('本文を差し替えますか？', '入力中の件名と本文は、テンプレートの内容に置き換わります。', '差し替える', apply, () => { e.target.value = X.tpl; });
+        else apply();
+      };
+      body.querySelectorAll('.mxtg').forEach((g) => { g.onclick = () => {
+        const ta = $('xText'); const s = ta.selectionStart ?? ta.value.length; const en = ta.selectionEnd ?? s;
+        ta.value = ta.value.slice(0, s) + g.dataset.tag + ta.value.slice(en);
+        X.body = ta.value; ta.focus(); ta.selectionStart = ta.selectionEnd = s + g.dataset.tag.length; sync();
+      }; });
+      $('xFileBtn').onclick = () => { $('xFile').value = ''; $('xFile').click(); };
+      if ($('xFileRm')) $('xFileRm').onclick = () => { X.file = null; X.fileErr = ''; renderMail(); };
+      $('xBack').onclick = askCloseMail;
+      $('xNext').onclick = () => { if (canConfirm()) { X.step = 'confirm'; renderMail(); } };
+      sync();
+    } else if (X.step === 'confirm') {
+      $('xTitle').textContent = '送信内容の確認';
+      const first = apps[0];
+      const err = schedErr();
+      body.innerHTML = `
+        <div class="mxr"><div class="mxl flat">宛先</div><div class="mxv flat"><span class="mxcnt"><b>${apps.length}</b>件</span><span class="mxlk" id="xToTgl">${X.showTo ? '宛先を閉じる ▲' : '宛先を確認する（1件ずつ外せます） ▼'}</span>
+          ${X.showTo ? `<div class="mxto">${apps.map((a) => { const j = jobById(a.job); return `<div class="tr"><span class="nm2">${esc(a.name)}</span><span class="jb">[${j.id}] ${esc(j.name)}</span><span class="rm" data-rm="${a.id}">✕ 外す</span></div>`; }).join('') || '<div class="tr">宛先がありません。</div>'}</div>` : ''}
+          ${apps.length ? '' : '<div class="mxerr">宛先が0件です。戻って選び直してください。</div>'}</div></div>
+        <div class="mxr"><div class="mxl flat">件名</div><div class="mxv flat">${first ? esc(fill(X.subj, first)) : esc(X.subj)}</div></div>
+        <div class="mxr"><div class="mxl flat">本文</div><div class="mxv flat"><div class="mxprev"><div class="ph">${first ? `プレビュー：宛先の1人目（${esc(first.name)}さん）で置換タグを置き換えて表示しています` : 'プレビュー'}</div><div class="pb">${esc(first ? fill(X.body, first) : X.body)}</div></div></div></div>
+        <div class="mxr"><div class="mxl flat">添付ファイル</div><div class="mxv flat">${X.file ? `<span class="mxchip">${esc(X.file.name)}<span class="sz">${fsize(X.file.size)}</span></span>` : 'なし'}</div></div>
+        <div class="mxr"><div class="mxl">送信タイミング</div><div class="mxv mxtime">
+          <div class="wopt" data-w="now"><span class="rd ${X.when === 'now' ? 'on' : ''}"></span>今すぐ送る</div>
+          <div class="wopt" data-w="at"><span class="rd ${X.when === 'at' ? 'on' : ''}"></span>日時を指定して予約する
+            <span class="when ${X.when === 'at' ? '' : 'dis'}"><input type="date" id="xDate" value="${X.date}" min="${isoDay(new Date())}" max="${isoDay(new Date(Date.now() + 7 * 86400000))}">
+            <select id="xHH">${Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0')).map((h) => `<option ${h === X.hh ? 'selected' : ''}>${h}</option>`).join('')}</select>:<select id="xMI">${['00', '10', '20', '30', '40', '50'].map((m) => `<option ${m === X.mi ? 'selected' : ''}>${m}</option>`).join('')}</select></span></div>
+          <div class="mxerr" id="xSchedErr">${esc(err)}</div>
+          <div class="mxnote">予約できるのは7日後までです。予約は、送信予定の5分前まで一括送付履歴から取り消せます。</div>
+          <div class="mxfix">受け付けた時点の宛先${apps.length}件と添付ファイルで送ります。予約した日時に、一覧の絞り込みはやり直しません。</div>
+        </div></div>`;
+      const label = X.when === 'at' ? '予約する' : '送信する';
+      foot.innerHTML = `<span class="sp"></span><span class="mbtn" id="xBack">戻る</span><span class="mbtn pr ${!apps.length || err || X.sending ? 'dis' : ''}" id="xSend">${X.sending ? '受け付けています…' : label}</span>`;
+      $('xToTgl').onclick = () => { X.showTo = !X.showTo; renderMail(); };
+      body.querySelectorAll('[data-rm]').forEach((r) => { r.onclick = () => { X.ids = X.ids.filter((id) => id !== Number(r.dataset.rm)); renderMail(); }; });
+      body.querySelectorAll('[data-w]').forEach((l) => { l.onclick = (e) => { if (e.target.closest('.when') && X.when === 'at') return; if (X.when !== l.dataset.w) { X.when = l.dataset.w; renderMail(); } }; });
+      $('xDate').onchange = (e) => { X.date = e.target.value; renderMail(); };
+      $('xHH').onchange = (e) => { X.hh = e.target.value; renderMail(); };
+      $('xMI').onchange = (e) => { X.mi = e.target.value; renderMail(); };
+      $('xBack').onclick = () => { X.step = 'edit'; renderMail(); };
+      $('xSend').onclick = () => {
+        if (X.sending || !apps.length || schedErr()) return;
+        X.sending = true; renderMail();
+        setTimeout(() => { X.at = X.when === 'at' ? new Date(`${X.date}T${X.hh}:${X.mi}:00`) : null; X.step = 'done'; renderMail(); }, 900);
+      };
+    } else {
+      $('xTitle').textContent = '受け付けました';
+      body.innerHTML = `<div class="mxdone"><div class="h">${X.at ? '送信の予約を受け付けました。' : '送信を受け付けました。'}</div><div class="s">結果は、一覧左下の「一括送付履歴を確認」から確認できます。${X.at ? '予約は、送信予定の5分前まで取り消せます。' : '受け付けた順に送ります。'}</div>
+        <div class="mxkv"><span class="k">件名</span><span>${esc(X.subj)}</span><span class="k">宛先</span><span>${apps.length}件</span><span class="k">送信予定</span><span>${X.at ? fmtWhen(X.at, true) : '今すぐ'}</span><span class="k">添付ファイル</span><span>${X.file ? esc(X.file.name) : 'なし'}</span></div></div>`;
+      foot.innerHTML = '<span class="sp"></span><span class="mbtn" id="xBack">閉じる</span>';
+      $('xBack').onclick = finishMail;
+    }
+  }
+  function finishMail() {
+    closeMail();
+    const cur = $('demoMail').value;
+    const hasRsv = ['rsv', 'rsv2', 'runrsv'].includes(cur);
+    const hasRun = ['run', 'runrsv'].includes(cur);
+    if (X.at) {
+      MI.rsv = { when: fmtWhen(X.at), subj: X.subj, count: X.ids.length };
+      MI.nRsv = hasRsv ? MI.nRsv + 1 : 1;
+      $('demoMail').value = hasRun ? 'runrsv' : MI.nRsv > 1 ? 'rsv2' : 'rsv';
+      X.ids.forEach((id) => { const a = APPS.find((x) => x.id === id); if (!a.labels.some((l) => l[1] === '送信予約中')) a.labels.push(['gy', '送信予約中']); });
+    } else {
+      MI.run = X.subj;
+      $('demoMail').value = hasRsv ? 'runrsv' : 'run';
+    }
+    selected = new Set();
+    render();
+    toast(X.at ? '送信を予約しました。画面上部に予約中と出ます' : '送信を受け付けました。画面上部に送信中と出ます');
+  }
+  $('xClose').onclick = askCloseMail;
+  $('xov').onclick = askCloseMail;
+  $('xFile').onchange = (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    if (!ALLOWED.test(f.name)) { X.fileErr = 'この形式のファイルは添付できません。PDF、Word、Excel、PowerPoint、JPEG、PNG、GIFを選んでください。'; renderMail(); return; }
+    if (f.size > 10 * 1048576) { X.fileErr = 'ファイルが10MBを超えています。10MB以下のファイルを選んでください。'; renderMail(); return; }
+    X.file = { name: f.name, size: f.size }; X.fileErr = ''; renderMail();
+  };
+
   search();
+  if (location.hash.startsWith('#mail')) {
+    selected = new Set(results.slice(0, 3).map((a) => a.id)); renderTable(); renderBar(); openMail();
+    if (location.hash !== '#mail') { const t = TEMPLATES[0]; Object.assign(X, { tpl: t.id, subj: t.subj, body: t.body, file: { name: '会社説明会のご案内.pdf', size: 482000 } }); }
+    if (location.hash === '#mail-confirm' || location.hash === '#mail-at' || location.hash === '#mail-done') X.step = 'confirm';
+    if (location.hash === '#mail-at' || location.hash === '#mail-done') X.when = 'at';
+    if (location.hash === '#mail-done') { X.at = new Date(`${X.date}T10:00:00`); X.step = 'done'; }
+    renderMail();
+  }
   if (location.hash === '#modal' || location.hash === '#modal-is') {
     openModal();
     if (location.hash === '#modal') { M.season = 'main'; M.focus = '1234570'; M.jobs.add('1234567'); M.slots.add('1234570:none'); renderModal(); }
