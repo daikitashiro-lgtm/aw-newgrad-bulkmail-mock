@@ -745,7 +745,12 @@
   const canCancel = (h) => h.at.getTime() - Date.now() > 5 * 60000;
   function renderHist() {
     const rows = [...HIST].sort((a, b) => b.at - a.at);
-    $('hBody').innerHTML = `<div class="mxlead">予約済み・送信中・完了を、新しい順に出します（完了は100件まで）。予約は送信予定の5分前まで取り消せます。宛先は件数だけを出します。未達があったときは、通知用メールアドレスにもお知らせが届きます。</div>
+    $('hBody').innerHTML = `<ul class="mxul">
+        <li>予約済み・送信中・完了を、新しい順に出します。</li>
+        <li>予約は、送信予定の5分前まで取り消せます。</li>
+        <li>宛先は件数だけを出します。</li>
+        <li>未達があったときは、通知用メールアドレスにもお知らせが届きます。</li>
+      </ul>
       <div class="hhead"><span>状態</span><span>配信日時・件名</span><span>宛先</span><span></span></div>
       ${rows.map((h) => {
         const nf = h.fail.length;
