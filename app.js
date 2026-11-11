@@ -40,7 +40,7 @@
   };
   const TYPE_LABEL = { course: ['コース', ''], seminar: ['説明会', 'ev'], entry: ['企業エントリー', 'en'] };
   const STATUSES = ['未対応', '書類送付依頼', '書類選考中', '書類合格', '面接調整開始', '面接日確定', '面接合格', '面接不合格', '内定通知'];
-  const NOTICES = ['新着応募', '新着メールあり', '面接日回答あり'];
+  const NOTICES = ['新着応募', '新着メールあり', '本日面接あり', '面接日回答あり'];
 
   const people = [
     ['青空 太郎', 21, '男性', '大学生', '東京都', '27'], ['青空 花子', 22, '女性', '大学生', '神奈川県', '27'], ['海野 さくら', 21, '女性', '大学生', '東京都', '28'],
@@ -89,6 +89,7 @@
       });
     }
   });
+  APPS.forEach((a) => { if (a.status === '面接日確定' && a.id % 2 === 0) a.labels.push(['pk', '本日面接あり']); });
   APPS.sort((a, b) => b.date - a.date || a.id - b.id);
   const jobById = (id) => JOBS.find((j) => j.id === id);
 
@@ -128,6 +129,7 @@
       if (F.statuses.length && !F.statuses.includes(a.status)) return false;
       if (F.notice === '新着応募' && !a.labels.some((l) => l[1] === 'New')) return false;
       if (F.notice === '新着メールあり' && !a.labels.some((l) => l[1] === '新着メール')) return false;
+      if (F.notice === '本日面接あり' && !a.labels.some((l) => l[1] === '本日面接あり')) return false;
       if (F.notice === '面接日回答あり' && !a.labels.some((l) => l[1] === '面接日回答あり')) return false;
       return true;
     });
@@ -167,7 +169,7 @@
     chip('prefBtn', 'prefVal', F.prefs.length > 0, F.prefs.length ? (F.prefs.length > 1 ? `${F.prefs[0]} ほか${F.prefs.length - 1}件` : F.prefs[0]) : 'すべて');
     chip('dateBtn', 'dateVal', !!F.date, F.date ? dateText(F.date) : '指定なし');
     chip('statusBtn', 'statusVal', F.statuses.length > 0, F.statuses.length ? (F.statuses.length > 1 ? `${F.statuses[0]} ほか${F.statuses.length - 1}件` : F.statuses[0]) : 'すべて');
-    chip('noticeBtn', 'noticeVal', !!F.notice, F.notice || 'すべて');
+    chip('noticeBtn', 'noticeVal', !!F.notice, F.notice || '新着／面接すべて');
   }
 
   function renderApplied() {
@@ -375,7 +377,7 @@
     }
   });
   multiDD('statusBtn', 'statusDD', '対応状況（複数選べます）', STATUSES.map((s) => ({ v: s, t: s })), () => F.statuses, (v) => { F.statuses = v; });
-  singleDD('noticeBtn', 'noticeDD', [{ v: '', t: 'すべて' }, ...NOTICES.map((s) => ({ v: s, t: s }))], () => F.notice, (v) => { F.notice = v; });
+  singleDD('noticeBtn', 'noticeDD', [{ v: '', t: '新着／面接すべて' }, ...NOTICES.map((s) => ({ v: s, t: s }))], () => F.notice, (v) => { F.notice = v; });
 
   // ---------- 検索欄 ----------
   $('searchBtn').onclick = () => { F.kw = $('kwIn').value.trim(); search(); };
