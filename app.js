@@ -599,7 +599,7 @@
   const extOf = (n) => (n.includes('.') ? n.split('.').pop().toLowerCase() : '');
   const totalSize = () => X.files.reduce((t, f) => t + f.size, 0);
   const tip = (html) => `<span class="qtip">?<span class="qbox">${html}</span></span>`;
-  const FILE_TIP = tip(`1ファイル10MBまで、1通に5ファイル・合計15MBまで添付できます。<br>次の拡張子のファイルは添付できません。<span class="qext">${BLOCKED.join('、')}</span>`);
+  const FILE_TIP = tip('1ファイル10MBまで、1通に5ファイル・合計15MBまで添付できます。');
   const WD = ['日', '月', '火', '水', '木', '金', '土'];
   const fmtWhen = (d, withYear) => `${withYear ? d.getFullYear() + '/' : ''}${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
   const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

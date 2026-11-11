@@ -265,7 +265,7 @@ td.cs { padding-left: 0; }
 .mxfbtn.dis { opacity: .45; pointer-events: none; }
 .mxchips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .qtip { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; margin-left: 6px; border-radius: 50%; background: #7FCBEA; color: #fff; font-size: 12px; font-weight: 700; cursor: help; vertical-align: -3px; }
-.qbox { display: none; position: absolute; left: -14px; bottom: calc(100% + 10px); width: 420px; padding: 12px 14px; background: #2B3238; color: #fff; font-size: 13px; font-weight: 400; line-height: 1.6; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,.25); z-index: 5; cursor: default; }
+.qbox { display: none; position: absolute; left: -14px; bottom: calc(100% + 10px); width: 300px; padding: 12px 14px; background: #2B3238; color: #fff; font-size: 13px; font-weight: 400; line-height: 1.6; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,.25); z-index: 5; cursor: default; }
 .qbox::after { content: ""; position: absolute; left: 18px; top: 100%; border: 7px solid transparent; border-top-color: #2B3238; }
 .qtip:hover .qbox, .qtip.show .qbox { display: block; }
 .qext { display: block; margin-top: 6px; color: #C9D3DA; font-size: 12px; }
