@@ -364,6 +364,29 @@
   // ---------- コース・日程枠モーダル ----------
   const M = { season: 'IS', tab: 'all', q: '', year: '', ended: false, focus: null, showPast: false, jobs: new Set(), slots: new Set() };
   const appsOfJob = (jid) => APPS.filter((a) => a.job === jid);
+  const allSlotKeys = (jid) => ['none', ...SLOTS[jid].map((x) => x.id)].map((sid) => `${jid}:${sid}`);
+  const clearSlots = (jid) => { [...M.slots].forEach((k) => { if (k.startsWith(jid + ':')) M.slots.delete(k); }); };
+  // 説明会日程求人の日程枠が全部選ばれたら、求人のチェックにまとめる
+  const normalize = (jid) => {
+    if (!SLOTS[jid]) return;
+    const keys = allSlotKeys(jid);
+    if (keys.every((k) => M.slots.has(k))) { clearSlots(jid); M.jobs.add(jid); }
+  };
+  const toggleSlot = (key) => {
+    const jid = key.split(':')[0];
+    if (M.jobs.has(jid)) {
+      M.jobs.delete(jid);
+      allSlotKeys(jid).forEach((k) => { if (k !== key) M.slots.add(k); });
+    } else {
+      M.slots.has(key) ? M.slots.delete(key) : M.slots.add(key);
+      normalize(jid);
+    }
+  };
+  const toggleJob = (jid) => {
+    if (M.jobs.has(jid)) M.jobs.delete(jid);
+    else { M.jobs.add(jid); }
+    if (SLOTS[jid]) { clearSlots(jid); M.focus = jid; }
+  };
   function visibleJobs(ignoreTab) {
     return JOBS.filter((j) => (M.season === 'all' || j.season === M.season)
       && (ignoreTab || M.tab === 'all' || j.type === M.tab)
@@ -422,7 +445,8 @@
     const up = slots.filter((s) => !s.past);
     const past = slots.filter((s) => s.past);
     const apps = appsOfJob(j.id);
-    const row = (sid, t1, t2, rr) => { const key = `${j.id}:${sid}`; const on = M.slots.has(key); return `<div class="slr ${on ? 'on' : ''}" data-slot="${key}"><span class="box ${on ? 'on' : ''}"></span><div class="main"><div>${t1}</div><div class="t2">${t2}</div></div><div class="r">${rr}</div></div>`; };
+    const jobOn = M.jobs.has(j.id);
+    const row = (sid, t1, t2, rr) => { const key = `${j.id}:${sid}`; const on = jobOn || M.slots.has(key); return `<div class="slr ${on ? 'on' : ''}" data-slot="${key}"><span class="box ${on ? 'on' : ''}"></span><div class="main"><div>${t1}</div><div class="t2">${t2}</div></div><div class="r">${rr}</div></div>`; };
     let html = row('none', '日程の予約なし（未予約）', '応募したが、まだ日程枠を予約していない人', `${apps.filter((a) => a.slot === null).length}件`);
     let mon = '';
     const list = M.showPast ? past.concat(up) : up;
@@ -431,7 +455,7 @@
       const n = apps.filter((a) => a.slot === s.id).length;
       html += row(s.id, s.label, s.venue, `予約 ${n}件／定員 ${s.cap}${n >= s.cap ? '<span class="full">満席</span>' : ''}`);
     });
-    r.innerHTML = `<div class="rh"><div class="t">${esc(j.name)} の日程枠<span>（これから ${up.length}枠・開催済み ${past.length}枠）</span></div><span class="all" data-allslots="1">すべての日程枠を選ぶ</span></div>
+    r.innerHTML = `<div class="rh"><div class="t">${esc(j.name)} の日程枠<span>（これから ${up.length}枠・開催済み ${past.length}枠）</span></div><span class="all" data-allslots="1">${jobOn ? 'すべての日程枠の選択を外す' : 'すべての日程枠を選ぶ'}</span></div>
       <div class="slots">${html}</div>${past.length ? `<div class="past" data-past="1">${M.showPast ? '開催済みの日程枠を隠す ▲' : `開催済みの日程枠（${past.length}枠）を表示 ▼`}</div>` : ''}`;
   }
   $('courseBtn').onclick = openModal;
@@ -446,23 +470,22 @@
   $('endedLbl').onclick = () => { M.ended = !M.ended; renderModal(); };
   $('jobList').onclick = (e) => {
     const c = e.target.closest('[data-check]');
-    if (c) { const id = c.dataset.check; M.jobs.has(id) ? M.jobs.delete(id) : M.jobs.add(id); renderModal(); return; }
+    if (c) { toggleJob(c.dataset.check); renderModal(); return; }
     const it = e.target.closest('[data-j]');
     if (!it) return;
     const j = jobById(it.dataset.j);
     if (j.type === 'seminar') { M.focus = j.id; M.showPast = false; }
-    else { M.jobs.has(j.id) ? M.jobs.delete(j.id) : M.jobs.add(j.id); }
+    else toggleJob(j.id);
     renderModal();
   };
   $('rightPane').onclick = (e) => {
     const s = e.target.closest('[data-slot]');
-    if (s) { const k = s.dataset.slot; M.slots.has(k) ? M.slots.delete(k) : M.slots.add(k); renderModal(); return; }
+    if (s) { toggleSlot(s.dataset.slot); renderModal(); return; }
     if (e.target.closest('[data-past]')) { M.showPast = !M.showPast; renderRight(); return; }
     if (e.target.closest('[data-allslots]')) {
       const j = M.focus;
-      const keys = ['none', ...SLOTS[j].filter((x) => M.showPast || !x.past).map((x) => x.id)].map((sid) => `${j}:${sid}`);
-      const allOn = keys.every((k) => M.slots.has(k));
-      keys.forEach((k) => (allOn ? M.slots.delete(k) : M.slots.add(k)));
+      if (M.jobs.has(j)) { M.jobs.delete(j); clearSlots(j); }
+      else { clearSlots(j); M.jobs.add(j); }
       renderModal();
     }
   };
@@ -480,5 +503,6 @@
     openModal();
     if (location.hash === '#modal') { M.season = 'main'; M.focus = '1234570'; M.jobs.add('1234567'); M.slots.add('1234570:none'); renderModal(); }
   }
+  if (location.hash === '#modal-all') { openModal(); M.season = 'main'; toggleJob('1234570'); renderModal(); }
   if (location.hash === '#open') { detailOpen = true; renderSearch(); }
 })();
