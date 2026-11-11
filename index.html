@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=1280">
+<title>新卒応募者一覧 一括メール 操作モック</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="mockbar">操作モック（ダミーデータ）：新卒応募者一覧の検索・選択・一括メールのアラート。メール作成以降の画面は省略しています。</div>
+  <div class="header">
+    <div class="logo"><span class="mk"></span>AirWORK<span class="badge">採用管理</span></div>
+    <div class="nav"><span>ホーム</span><span>候補者</span><span>応募者</span><span class="on">新卒応募者・説明会</span><span>求人</span><span>有料広告</span><span>その他</span></div>
+    <div class="hr"><span>ⓘ ヘルプ</span><span>株式会社サンプル ▾</span></div>
+  </div>
+
+  <div class="page">
+    <div class="stat" id="alerts"></div>
+    <h1>新卒応募者・説明会</h1>
+    <div class="tabs"><span class="on">応募者一覧</span><span>説明会求人一覧</span></div>
+
+    <div class="search">
+      <div class="row">
+        <div class="ddwrap">
+          <div class="sel" id="yearBtn" style="width:190px"><span class="lb">卒業年度</span><span id="yearVal">すべて</span><span class="cv">▼</span></div>
+          <div class="dd" id="yearDD"></div>
+        </div>
+        <div class="pick" id="courseBtn"><span class="lb">コース・日程枠</span><span id="courseVal">すべて</span><span class="go">選ぶ ›</span></div>
+        <label class="fw" id="memoBox"><span class="k">メモ</span><input id="memoIn" placeholder="例：説明会参加済み、一次合格"></label>
+        <label class="fw"><span class="k">応募者名・求人</span><input id="kwIn" placeholder="例：青空、総合職、1234567"></label>
+        <div class="btn" id="searchBtn">検索</div>
+        <span class="clear" id="clearBtn">クリア</span>
+      </div>
+      <div class="hint">
+        <label class="cb" id="memoEmptyLbl"><span class="box" id="memoEmptyBox"></span>メモが空の人だけ</label>
+        入れた条件は、すべて掛け合わせて絞ります。対応はメモに書いて、メモで絞り込むのがおすすめです。
+        <span class="more" id="moreBtn">詳しい条件 ▼</span>
+      </div>
+      <div class="detail" id="detail">
+        <div class="ddwrap"><div class="chip" id="prefBtn"><span class="k">現住所</span><span class="v" id="prefVal">すべて</span><span class="cv">▼</span></div><div class="dd" id="prefDD"></div></div>
+        <div class="ddwrap"><div class="chip" id="dateBtn"><span class="k">応募日</span><span class="v" id="dateVal">指定なし</span><span class="cv">▼</span></div><div class="dd" id="dateDD"></div></div>
+        <div class="ddwrap"><div class="chip" id="statusBtn"><span class="k">対応状況</span><span class="v" id="statusVal">すべて</span><span class="cv">▼</span></div><div class="dd" id="statusDD"></div></div>
+        <div class="ddwrap"><div class="chip" id="noticeBtn"><span class="k">お知らせ</span><span class="v" id="noticeVal">すべて</span><span class="cv">▼</span></div><div class="dd" id="noticeDD"></div></div>
+      </div>
+    </div>
+
+    <div class="applied" id="applied"></div>
+
+    <div class="bar1">
+      <div class="count">検索結果<b id="total">0</b>件</div>
+      <div class="btn dlbtn" id="dlBtn">⤓ 一括ダウンロードする</div>
+    </div>
+    <div class="bar2" id="bar2"></div>
+    <table>
+      <thead><tr><th style="width:44px"><span class="box" id="headBox"></span></th><th style="width:22%">応募者</th><th style="width:30%">求人内容</th><th style="width:17%">対応状況</th><th>面接日／メモ</th><th class="ops"></th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty">条件に合う応募はありません。</div>
+    <div class="pager" id="pager"></div>
+    <div class="pinfo" id="pinfo"></div>
+  </div>
+
+  <!-- コース・日程枠モーダル -->
+  <div class="ov" id="ov"></div>
+  <div class="md" id="md">
+    <div class="mh"><span class="x" id="mdClose">×</span><h2>コース・日程枠を選ぶ</h2></div>
+    <div class="mb">
+      <div class="desc" id="mdDesc"></div>
+      <div class="kind"><span class="klb">求人種別</span><div class="kseg" id="kseg"></div></div>
+      <div class="tools">
+        <label class="srch"><span class="mg">⌕</span><input id="mdQ" placeholder="求人名・求人番号で探す"></label>
+        <select class="msel" id="mdYear"><option value="">対象卒年：すべて</option><option value="27">対象卒年：27卒</option><option value="28">対象卒年：28卒</option></select>
+        <label class="cb" id="endedLbl"><span class="box" id="endedBox"></span>掲載終了の求人も出す</label>
+      </div>
+      <div class="panes" id="panes">
+        <div class="left">
+          <div class="mtabs" id="mtabs"></div>
+          <div class="sort">新しく作った順（求人一覧と同じ）</div>
+          <div class="list" id="jobList"></div>
+        </div>
+        <div class="right" id="rightPane"></div>
+      </div>
+      <div class="chosen" id="chosen"></div>
+    </div>
+    <div class="mf">
+      <span class="sp"></span>
+      <div class="mbtn" id="mdCancel">キャンセル</div>
+      <div class="mbtn pr" id="mdApply">この条件で絞り込む</div>
+    </div>
+  </div>
+
+  <!-- デモ操作 -->
+  <div class="demo">
+    <div class="dt">デモ：アラートの状態</div>
+    <label>一括メール
+      <select id="demoMail">
+        <option value="none">なし</option>
+        <option value="rsv">送信予約中</option>
+        <option value="rsv2">送信予約が複数</option>
+        <option value="run">送信処理中</option>
+        <option value="runrsv" selected>送信処理中＋予約あり</option>
+      </select>
+    </label>
+    <label>ダウンロード
+      <select id="demoDl">
+        <option value="none">なし</option>
+        <option value="run" selected>作成中</option>
+        <option value="ok">作成完了</option>
+        <option value="ng">作成失敗</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
