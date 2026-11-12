@@ -93,6 +93,9 @@
   APPS.sort((a, b) => b.date - a.date || a.id - b.id);
   const jobById = (id) => JOBS.find((j) => j.id === id);
 
+  const YEARS = ['26', '27', '28', '29'];
+  const yearText = (y) => (y === 'other' ? 'その他' : `${y}卒`);
+
   // ---------- 状態 ----------
   const F = { years: [], jobs: [], slots: [], kw: '', memoEmpty: false, date: '', statuses: [], notice: '' };
   let detailOpen = false;
@@ -105,7 +108,7 @@
   const within = (d, days) => (new Date(2026, 10, 11) - d) / 86400000 < days;
   function filterApps() {
     return APPS.filter((a) => {
-      if (F.years.length && !F.years.includes(a.year)) return false;
+      if (F.years.length && !F.years.includes(YEARS.includes(a.year) ? a.year : 'other')) return false;
       if (F.jobs.length || F.slots.length) {
         const hitJob = F.jobs.includes(a.job);
         const hitSlot = F.slots.some((s) => { const [jid, sid] = s.split(':'); return jid === a.job && (sid === 'none' ? a.slot === null : a.slot === sid); });
@@ -158,7 +161,7 @@
   }
 
   function renderSearch() {
-    $('yearVal').innerHTML = F.years.length ? `<span class="on-v">${F.years.map((y) => y + '卒').join('、')}</span>` : 'すべて';
+    $('yearVal').innerHTML = F.years.length ? `<span class="on-v">${F.years.map(yearText).join('、')}</span>` : 'すべて';
     const cs = courseSummary();
     $('courseVal').innerHTML = cs ? `<span class="on-v">${esc(cs)}</span>` : 'すべて';
     $('memoEmptyBox').classList.toggle('on', F.memoEmpty);
@@ -173,7 +176,7 @@
 
   function renderApplied() {
     const tags = [];
-    if (F.years.length) tags.push(['years', `卒業年度：${F.years.map((y) => y + '卒').join('、')}`]);
+    if (F.years.length) tags.push(['years', `卒業年度：${F.years.map(yearText).join('、')}`]);
     F.jobs.forEach((j) => tags.push([`job:${j}`, jobLabel(j)]));
     F.slots.forEach((s) => { const [jid, sid] = s.split(':'); tags.push([`slot:${s}`, `${jobById(jid).name}：${slotLabel(jid, sid)}`]); });
     if (F.kw) tags.push(['kw', `フリーワード：${F.kw}`]);
@@ -293,7 +296,7 @@
   }
   document.addEventListener('click', () => closeDDs());
 
-  multiDD('yearBtn', 'yearDD', '学生の卒業年度（複数選べます）', ['26', '27', '28', '29'].map((y) => ({ v: y, t: y + '卒' })), () => F.years, (v) => { F.years = v; });
+  multiDD('yearBtn', 'yearDD', '学生の卒業年度（複数選べます）', [...YEARS, 'other'].map((y) => ({ v: y, t: yearText(y) })), () => F.years, (v) => { F.years = v; });
   // ---------- 応募日カレンダー（期間指定） ----------
   const TODAY = new Date(2026, 10, 11);
   const cal = { y: 2026, m: 10, from: null, to: null };
