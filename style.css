@@ -317,7 +317,7 @@ td.cs { padding-left: 0; }
 .hbody { margin-top: 8px; padding: 10px 12px; background: #FAFAFA; border: 1px solid #E8E8E8; border-radius: 3px; white-space: pre-wrap; line-height: 1.6; font-size: 12px; max-height: 220px; overflow-y: auto; }
 .hn { font-size: 13px; color: #333; line-height: 1.7; }
 .hn .red { color: #E5534B; font-weight: 700; }
-.hn .gy2 { color: #888; font-size: 12px; }
+.hn .gy2 { color: #888; font-size: 12px; white-space: nowrap; }
 .hop { text-align: right; }
 .mbtn.sm { height: 32px; padding: 0 14px; font-size: 12px; }
 .mbtn.dl { color: #1FA9E1; border-color: #1FA9E1; }
