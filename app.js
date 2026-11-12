@@ -95,7 +95,7 @@
   APPS.forEach((a) => { if (a.name === '石井 陸') a.manual = true; });
   const jobById = (id) => JOBS.find((j) => j.id === id);
 
-  const YEARS = ['26', '27', '28', '29', '30', '31'];
+  const YEARS = ['27', '28', '29', '30'];
   const yearText = (y) => (y === 'other' ? 'その他' : `${y}卒`);
 
   // ---------- 状態 ----------
