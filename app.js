@@ -421,7 +421,7 @@
   $('demoDl').onchange = renderAlerts;
 
   // ---------- コース・日程枠モーダル ----------
-  const M = { season: 'IS', tab: 'all', q: '', year: '', ended: false, focus: null, showPast: false, jobs: new Set(), slots: new Set() };
+  const M = { season: 'IS', tab: 'all', q: '', years: [], ended: false, focus: null, showPast: false, jobs: new Set(), slots: new Set() };
   const appsOfJob = (jid) => APPS.filter((a) => a.job === jid);
   const hasApps = (jid) => APPS.some((a) => a.job === jid);
   const allSlotKeys = (jid) => ['none', ...SLOTS[jid].map((x) => x.id)].map((sid) => `${jid}:${sid}`);
@@ -451,13 +451,13 @@
     return JOBS.filter((j) => hasApps(j.id) && (M.season === 'all' || j.season === M.season)
       && (ignoreTab || M.tab === 'all' || j.type === M.tab)
       && (M.ended || j.posted)
-      && (!M.year || j.years.includes(M.year))
+      && (!M.years.length || j.years.some((y) => M.years.includes(y)))
       && (!M.q || j.name.includes(M.q) || j.id.includes(M.q)))
       .sort((a, b) => b.created.localeCompare(a.created));
   }
   function openModal() {
-    Object.assign(M, { season: 'all', tab: 'all', q: '', year: '', ended: false, focus: null, showPast: false, jobs: new Set(F.jobs), slots: new Set(F.slots) });
-    $('mdQ').value = ''; $('mdYear').value = '';
+    Object.assign(M, { season: 'all', tab: 'all', q: '', years: [], ended: false, focus: null, showPast: false, jobs: new Set(F.jobs), slots: new Set(F.slots) });
+    $('mdQ').value = '';
     $('ov').classList.add('open'); $('md').classList.add('open');
     renderModal();
   }
@@ -470,6 +470,7 @@
     const cnt = (s) => JOBS.filter((j) => hasApps(j.id) && (s === 'all' || j.season === s) && (M.ended || j.posted)).length;
     $('kseg').innerHTML = [['IS', 'IS期の求人'], ['main', '就活期の求人'], ['all', 'すべて']].map(([k, t]) => `<span class="${M.season === k ? 'on' : ''}" data-s="${k}">${t}<b>${cnt(k)}</b></span>`).join('');
     $('endedBox').classList.toggle('on', M.ended);
+    $('mdYearVal').innerHTML = M.years.length ? `対象卒年：<b>${M.years.map((y) => y + '卒').join('、')}</b>` : '対象卒年：すべて';
     const base = visibleJobs(true);
     const tabs = [['all', 'すべて'], ['course', 'コース求人'], ['seminar', '説明会日程求人'], ['entry', '企業エントリー求人']].filter(([k]) => !(isIS && k === 'seminar'));
     if (isIS && M.tab === 'seminar') M.tab = 'all';
@@ -527,7 +528,24 @@
   $('kseg').onclick = (e) => { const s = e.target.closest('[data-s]'); if (s) { M.season = s.dataset.s; M.focus = null; renderModal(); } };
   $('mtabs').onclick = (e) => { const t = e.target.closest('[data-t]'); if (t) { M.tab = t.dataset.t; renderModal(); } };
   $('mdQ').oninput = () => { M.q = $('mdQ').value.trim(); renderModal(); };
-  $('mdYear').onchange = () => { M.year = $('mdYear').value; renderModal(); };
+  const MD_YEARS = [...new Set(JOBS.flatMap((j) => j.years))].sort();
+  const drawMdYear = () => {
+    $('mdYearDD').innerHTML = `<div class="dh">対象卒年（複数選べます）</div>${MD_YEARS.map((y) => `<label data-y="${y}"><span class="box ${M.years.includes(y) ? 'on' : ''}"></span>${y}卒</label>`).join('')}<div class="df"><span data-a="clear">すべて解除</span><span class="ok" data-a="ok">閉じる</span></div>`;
+  };
+  $('mdYearBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const dd = $('mdYearDD');
+    if (dd.classList.contains('open')) { dd.classList.remove('open'); return; }
+    closeDDs(dd); drawMdYear(); dd.classList.add('open');
+  });
+  $('mdYearDD').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const l = e.target.closest('[data-y]'); const a = e.target.closest('[data-a]');
+    if (l) { const y = l.dataset.y; M.years = M.years.includes(y) ? M.years.filter((x) => x !== y) : MD_YEARS.filter((x) => x === y || M.years.includes(x)); }
+    if (a && a.dataset.a === 'clear') M.years = [];
+    if (a && a.dataset.a === 'ok') { $('mdYearDD').classList.remove('open'); return; }
+    drawMdYear(); renderModal();
+  });
   $('endedLbl').onclick = () => { M.ended = !M.ended; renderModal(); };
   $('jobList').onclick = (e) => {
     const c = e.target.closest('[data-check]');

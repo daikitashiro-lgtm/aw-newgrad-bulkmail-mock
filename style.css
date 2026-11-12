@@ -148,6 +148,9 @@ td.cs { padding-left: 0; }
 .srch { flex: 1; height: 38px; border: 1px solid #C9C9C9; border-radius: 3px; display: flex; align-items: center; padding: 0 12px; gap: 8px; }
 .srch input { border: 0; outline: 0; flex: 1; font-size: 13px; }
 .srch .mg { color: #888; }
+.mselbtn { display: flex; align-items: center; gap: 10px; min-width: 170px; cursor: pointer; white-space: nowrap; }
+.mselbtn b { color: #1FA9E1; }
+.mselbtn .cv { margin-left: auto; color: #777; font-size: 10px; }
 .msel { height: 38px; border: 1px solid #C9C9C9; border-radius: 3px; padding: 0 8px; font-size: 13px; background: #fff; }
 .panes { display: flex; border: 1px solid #DDD; border-radius: 4px; height: 400px; overflow: hidden; }
 .left { width: 53%; border-right: 1px solid #DDD; display: flex; flex-direction: column; }
