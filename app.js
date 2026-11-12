@@ -4,20 +4,20 @@
 
   // ---------- ダミーデータ ----------
   const JOBS = [
-    { id: '1234590', type: 'course', season: 'IS', name: '冬のインターンシップ（5days）', years: ['28'], created: '2026/11/05', posted: true, place: '東京都・本社' },
-    { id: '1234591', type: 'entry', season: 'IS', name: '株式会社サンプル 企業エントリー（IS期）', years: ['28'], created: '2026/10/30', posted: true, place: '' },
+    { id: '1234590', type: 'course', season: 'IS', name: '冬のインターンシップ（5days）', years: ['28', '29'], created: '2026/11/05', posted: true, place: '東京都・本社' },
+    { id: '1234591', type: 'entry', season: 'IS', name: '株式会社サンプル 企業エントリー（IS期）', years: ['28', '29'], created: '2026/10/30', posted: true, place: '' },
     { id: '1234588', type: 'course', season: 'IS', name: '秋の1day仕事体験（オンライン）', years: ['28'], created: '2026/10/12', posted: true, place: 'オンライン' },
-    { id: '1234587', type: 'course', season: 'IS', name: '秋の1day仕事体験（東京）', years: ['28'], created: '2026/10/10', posted: true, place: '東京都・本社' },
+    { id: '1234587', type: 'course', season: 'IS', name: '秋の1day仕事体験（東京）', years: ['28', '29'], created: '2026/10/10', posted: true, place: '東京都・本社' },
     { id: '1234582', type: 'course', season: 'IS', name: '夏の1day仕事体験（大阪）', years: ['28'], created: '2026/06/20', posted: false, place: '大阪府・大阪支社' },
     { id: '1234581', type: 'course', season: 'IS', name: '夏のインターンシップ（3days）', years: ['28'], created: '2026/06/15', posted: true, place: '東京都・本社' },
     { id: '1234570', type: 'seminar', season: 'main', name: '会社説明会・座談会', years: ['27', '28'], created: '2026/11/02', posted: true, place: '東京都' },
     { id: '1234575', type: 'entry', season: 'main', name: '株式会社サンプル 企業エントリー', years: ['27'], created: '2026/10/28', posted: true, place: '' },
     { id: '1234580', type: 'course', season: 'main', name: '総合職コース（関西）', years: ['27'], created: '2026/10/20', posted: true, place: '大阪府・大阪支社' },
     { id: '1234573', type: 'seminar', season: 'main', name: '大阪会場 会社説明会', years: ['27'], created: '2026/10/15', posted: true, place: '大阪府' },
-    { id: '1234569', type: 'course', season: 'main', name: '営業職コース', years: ['27'], created: '2026/10/03', posted: true, place: '東京都・本社／大阪府・大阪支社' },
-    { id: '1234567', type: 'course', season: 'main', name: '総合職コース', years: ['27'], created: '2026/10/01', posted: true, place: '東京都・本社' },
+    { id: '1234569', type: 'course', season: 'main', name: '営業職コース', years: ['27', '28'], created: '2026/10/03', posted: true, place: '東京都・本社／大阪府・大阪支社' },
+    { id: '1234567', type: 'course', season: 'main', name: '総合職コース', years: ['27', '28'], created: '2026/10/01', posted: true, place: '東京都・本社' },
     { id: '1234568', type: 'course', season: 'main', name: 'エンジニアコース', years: ['28'], created: '2026/09/20', posted: true, place: '東京都・本社' },
-    { id: '1234572', type: 'seminar', season: 'main', name: 'エンジニア向け説明会', years: ['28'], created: '2026/09/15', posted: true, place: 'オンライン' },
+    { id: '1234572', type: 'seminar', season: 'main', name: 'エンジニア向け説明会', years: ['27', '28'], created: '2026/09/15', posted: true, place: 'オンライン' },
   ];
   const SLOTS = {
     '1234570': [
@@ -51,6 +51,7 @@
     ['小川 凛', 20, '女性', '大学生', '京都府', '28'], ['加藤 悠真', 22, '男性', '大学生', '東京都', '27'], ['吉田 心春', 21, '女性', '大学生', '神奈川県', '28'],
     ['松本 陽向', 21, '男性', '大学生', '福岡県', '27'], ['井上 紬', 20, '女性', '大学生', '東京都', '28'], ['木村 蒼', 22, '男性', '大学生', '大阪府', '27'],
     ['林 杏', 21, '女性', '大学生', '埼玉県', '28'], ['清水 樹', 22, '男性', '大学院生', '東京都', '27'], ['斎藤 澪', 21, '女性', '大学生', '千葉県', '27'],
+    ['岡田 莉子', 19, '女性', '大学生', '東京都', '29'], ['石井 陸', 20, '男性', '大学生', '神奈川県', '29'],
   ];
   const MEMOS = ['', '', '', 'IS参加済み', 'IS参加済み', '説明会参加済み', '説明会予約済み', 'ES提出依頼済み', 'IS参加済み／ES提出依頼済み', '一次合格', '1day参加済み', '書類提出済み', '営業職を第一志望'];
   let seed = 7;
@@ -97,7 +98,13 @@
   const yearText = (y) => (y === 'other' ? 'その他' : `${y}卒`);
 
   // ---------- 状態 ----------
-  const F = { years: [], jobs: [], slots: [], kw: '', memoEmpty: false, date: '', statuses: [], notice: '' };
+  // F：画面で選んでいる条件。A：最後に「検索」を押したときの条件（結果と「絞り込み中」はこちら）
+  const EMPTY = () => ({ years: [], jobs: [], slots: [], kw: '', memoEmpty: false, date: '', statuses: [], notice: '' });
+  const copyCond = (o) => ({ ...o, years: [...o.years], jobs: [...o.jobs], slots: [...o.slots], statuses: [...o.statuses] });
+  const F = EMPTY();
+  const A = EMPTY();
+  const condKey = (o) => JSON.stringify({ ...o, years: [...o.years].sort(), jobs: [...o.jobs].sort(), slots: [...o.slots].sort(), statuses: [...o.statuses].sort(), date: o.date ? [o.date.from.getTime(), o.date.to ? o.date.to.getTime() : 0] : '' });
+  const isDirty = () => condKey({ ...F, kw: $('kwIn').value.trim() }) !== condKey(A);
   let detailOpen = false;
   let page = 1;
   const PER = 30;
@@ -108,40 +115,51 @@
   const within = (d, days) => (new Date(2026, 10, 11) - d) / 86400000 < days;
   function filterApps() {
     return APPS.filter((a) => {
-      if (F.years.length && (!a.year || !F.years.includes(YEARS.includes(a.year) ? a.year : 'other'))) return false;
-      if (F.jobs.length || F.slots.length) {
-        const hitJob = F.jobs.includes(a.job);
-        const hitSlot = F.slots.some((s) => { const [jid, sid] = s.split(':'); return jid === a.job && (sid === 'none' ? a.slot === null : a.slot === sid); });
+      if (A.years.length && (!a.year || !A.years.includes(YEARS.includes(a.year) ? a.year : 'other'))) return false;
+      if (A.jobs.length || A.slots.length) {
+        const hitJob = A.jobs.includes(a.job);
+        const hitSlot = A.slots.some((s) => { const [jid, sid] = s.split(':'); return jid === a.job && (sid === 'none' ? a.slot === null : a.slot === sid); });
         if (!hitJob && !hitSlot) return false;
       }
-      if (F.memoEmpty && a.memo) return false;
-      if (F.kw) {
+      if (A.memoEmpty && a.memo) return false;
+      if (A.kw) {
         const j = jobById(a.job);
         const hay = [a.memo, a.name, j.name, j.id, j.place, '正社員', '新卒'].join(' ');
-        const words = F.kw.split(/[\s\u3000]+/).filter(Boolean);
+        const words = A.kw.split(/[\s\u3000]+/).filter(Boolean);
         const inc = words.filter((w) => !/^[-－]/.test(w));
         const exc = words.filter((w) => /^[-－]./.test(w)).map((w) => w.slice(1));
         if (!inc.every((w) => hay.includes(w))) return false;
         if (exc.some((w) => hay.includes(w))) return false;
       }
-      if (F.date) {
+      if (A.date) {
         const d0 = new Date(a.date.getFullYear(), a.date.getMonth(), a.date.getDate());
-        if (d0 < F.date.from || d0 > (F.date.to || F.date.from)) return false;
+        if (d0 < A.date.from || d0 > (A.date.to || A.date.from)) return false;
       }
-      if (F.statuses.length && !F.statuses.includes(a.status)) return false;
-      if (F.notice === '新着応募' && !a.labels.some((l) => l[1] === 'New')) return false;
-      if (F.notice === '新着メールあり' && !a.labels.some((l) => l[1] === '新着メール')) return false;
-      if (F.notice === '本日面接あり' && !a.labels.some((l) => l[1] === '本日面接あり')) return false;
-      if (F.notice === '面接日回答あり' && !a.labels.some((l) => l[1] === '面接日回答あり')) return false;
+      if (A.statuses.length && !A.statuses.includes(a.status)) return false;
+      if (A.notice === '新着応募' && !a.labels.some((l) => l[1] === 'New')) return false;
+      if (A.notice === '新着メールあり' && !a.labels.some((l) => l[1] === '新着メール')) return false;
+      if (A.notice === '本日面接あり' && !a.labels.some((l) => l[1] === '本日面接あり')) return false;
+      if (A.notice === '面接日回答あり' && !a.labels.some((l) => l[1] === '面接日回答あり')) return false;
       return true;
     });
   }
 
-  function search(keepSelection) {
+  function refresh(keepSelection) {
     results = filterApps();
     page = 1;
     if (!keepSelection) selected = new Set();
     render();
+  }
+  function search(keepSelection) {
+    F.kw = $('kwIn').value.trim();
+    Object.assign(A, copyCond(F));
+    refresh(keepSelection);
+  }
+  function changed() { renderSearch(); renderPending(); }
+  function renderPending() {
+    const d = isDirty();
+    $('searchBtn').classList.toggle('hot', d);
+    $('pend').innerHTML = d ? '<span class="ic">!</span>条件が変わっています。「検索」を押すと結果に反映します' : '';
   }
 
   // ---------- 表示 ----------
@@ -166,7 +184,7 @@
     $('courseVal').innerHTML = cs ? `<span class="on-v">${esc(cs)}</span>` : 'すべて';
     $('memoEmptyBox').classList.toggle('on', F.memoEmpty);
     const detailCount = [F.date, F.statuses.length, F.notice].filter(Boolean).length;
-    $('moreBtn').textContent = detailOpen ? '詳しい条件を閉じる ▲' : `詳しい条件${detailCount ? `（${detailCount}件適用中）` : ''} ▼`;
+    $('moreBtn').textContent = detailOpen ? '詳しい条件を閉じる ▲' : `詳しい条件${detailCount ? `（${detailCount}件指定中）` : ''} ▼`;
     $('detail').classList.toggle('open', detailOpen);
     const chip = (btn, val, on, text) => { $(btn).classList.toggle('on', on); $(val).textContent = text; };
     chip('dateBtn', 'dateVal', !!F.date, F.date ? dateText(F.date) : '指定なし');
@@ -176,14 +194,14 @@
 
   function renderApplied() {
     const tags = [];
-    if (F.years.length) tags.push(['years', `卒業年度：${F.years.map(yearText).join('、')}`]);
-    F.jobs.forEach((j) => tags.push([`job:${j}`, jobLabel(j)]));
-    F.slots.forEach((s) => { const [jid, sid] = s.split(':'); tags.push([`slot:${s}`, `${jobById(jid).name}：${slotLabel(jid, sid)}`]); });
-    if (F.kw) tags.push(['kw', `フリーワード：${F.kw}`]);
-    if (F.memoEmpty) tags.push(['memoEmpty', 'メモが空の人だけ']);
-    if (F.date) tags.push(['date', `応募日：${dateText(F.date)}`]);
-    if (F.statuses.length) tags.push(['statuses', `対応状況：${F.statuses.join('、')}`]);
-    if (F.notice) tags.push(['notice', `お知らせ：${F.notice}`]);
+    if (A.years.length) tags.push(['years', `卒業年度：${A.years.map(yearText).join('、')}`]);
+    A.jobs.forEach((j) => tags.push([`job:${j}`, jobLabel(j)]));
+    A.slots.forEach((s) => { const [jid, sid] = s.split(':'); tags.push([`slot:${s}`, `${jobById(jid).name}：${slotLabel(jid, sid)}`]); });
+    if (A.kw) tags.push(['kw', `フリーワード：${A.kw}`]);
+    if (A.memoEmpty) tags.push(['memoEmpty', 'メモが空の人だけ']);
+    if (A.date) tags.push(['date', `応募日：${dateText(A.date)}`]);
+    if (A.statuses.length) tags.push(['statuses', `対応状況：${A.statuses.join('、')}`]);
+    if (A.notice) tags.push(['notice', `お知らせ：${A.notice}`]);
     $('applied').innerHTML = tags.length
       ? `<span class="t">絞り込み中</span>${tags.map(([k, t]) => `<span class="tag">${esc(t)}<span class="x" data-k="${esc(k)}">✕</span></span>`).join('')}<span class="all" id="clearAll">条件をすべてクリア</span>`
       : '';
@@ -254,7 +272,7 @@
     dlBtn.textContent = dl === 'run' ? '⤓ 一括ダウンロードする（作成中）' : '⤓ 一括ダウンロードする';
   }
 
-  function render() { renderSearch(); renderApplied(); renderTable(); renderBar(); renderAlerts(); }
+  function render() { renderSearch(); renderPending(); renderApplied(); renderTable(); renderBar(); renderAlerts(); }
 
   let toastTimer;
   function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200); }
@@ -278,7 +296,7 @@
         const a = ev.target.closest('[data-a]');
         if (l) { const v = l.dataset.v; tmp.has(v) ? tmp.delete(v) : tmp.add(v); draw(); }
         if (a && a.dataset.a === 'clear') { tmp.clear(); draw(); }
-        if (a && a.dataset.a === 'ok') { setSel(options.map((o) => o.v).filter((v) => tmp.has(v))); dd.classList.remove('open'); search(); }
+        if (a && a.dataset.a === 'ok') { setSel(options.map((o) => o.v).filter((v) => tmp.has(v))); dd.classList.remove('open'); changed(); }
       };
       dd.classList.add('open');
     });
@@ -290,7 +308,7 @@
       if (dd.classList.contains('open')) { dd.classList.remove('open'); return; }
       closeDDs(dd);
       dd.innerHTML = options.map((o) => `<div class="opt ${get() === o.v ? 'on' : ''}" data-v="${esc(o.v)}">${esc(o.t)}</div>`).join('');
-      dd.onclick = (ev) => { ev.stopPropagation(); const o = ev.target.closest('.opt'); if (!o) return; set(o.dataset.v); dd.classList.remove('open'); search(); };
+      dd.onclick = (ev) => { ev.stopPropagation(); const o = ev.target.closest('.opt'); if (!o) return; set(o.dataset.v); dd.classList.remove('open'); changed(); };
       dd.classList.add('open');
     });
   }
@@ -341,7 +359,7 @@
     if (a) {
       if (a.dataset.a === 'prev') { cal.m--; if (cal.m < 0) { cal.m = 11; cal.y--; } }
       if (a.dataset.a === 'next') { cal.m++; if (cal.m > 11) { cal.m = 0; cal.y++; } }
-      if (a.dataset.a === 'clr') { cal.from = null; cal.to = null; F.date = ''; $('dateDD').classList.remove('open'); search(); return; }
+      if (a.dataset.a === 'clr') { cal.from = null; cal.to = null; F.date = ''; $('dateDD').classList.remove('open'); changed(); return; }
       drawCal(); return;
     }
     if (c) {
@@ -350,34 +368,34 @@
       if (d < cal.from) { cal.to = cal.from; cal.from = d; } else cal.to = d;
       F.date = { from: cal.from, to: cal.to };
       $('dateDD').classList.remove('open');
-      search();
+      changed();
     }
   });
   multiDD('statusBtn', 'statusDD', '対応状況（複数選べます）', STATUSES.map((s) => ({ v: s, t: s })), () => F.statuses, (v) => { F.statuses = v; });
   singleDD('noticeBtn', 'noticeDD', [{ v: '', t: '新着／面接すべて' }, ...NOTICES.map((s) => ({ v: s, t: s }))], () => F.notice, (v) => { F.notice = v; });
 
   // ---------- 検索欄 ----------
-  $('searchBtn').onclick = () => { F.kw = $('kwIn').value.trim(); search(); };
-  $('kwIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('searchBtn').onclick(); });
-  $('memoEmptyLbl').onclick = () => { F.memoEmpty = !F.memoEmpty; search(); };
+  $('searchBtn').onclick = () => search();
+  $('kwIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') search(); });
+  $('kwIn').addEventListener('input', renderPending);
+  $('memoEmptyLbl').onclick = () => { F.memoEmpty = !F.memoEmpty; changed(); };
   $('moreBtn').onclick = () => { detailOpen = !detailOpen; renderSearch(); };
-  function clearAll() {
-    Object.assign(F, { years: [], jobs: [], slots: [], kw: '', memoEmpty: false, date: '', statuses: [], notice: '' });
-    $('kwIn').value = '';
-    search();
-  }
-  $('clearBtn').onclick = clearAll;
+  // 検索窓の「クリア」は入力だけを空にする。「絞り込み中」の✕と「条件をすべてクリア」は、その場で結果も更新する
+  $('clearBtn').onclick = () => { Object.assign(F, EMPTY()); $('kwIn').value = ''; changed(); };
   $('applied').addEventListener('click', (e) => {
-    if (e.target.id === 'clearAll') { clearAll(); return; }
+    if (e.target.id === 'clearAll') { Object.assign(F, EMPTY()); Object.assign(A, EMPTY()); $('kwIn').value = ''; refresh(); return; }
     const k = e.target.dataset.k;
     if (!k) return;
-    if (k.startsWith('job:')) F.jobs = F.jobs.filter((j) => j !== k.slice(4));
-    else if (k.startsWith('slot:')) F.slots = F.slots.filter((s) => s !== k.slice(5));
-    else if (k === 'kw') { F.kw = ''; $('kwIn').value = ''; }
-    else if (k === 'memoEmpty') F.memoEmpty = false;
-    else if (k === 'date' || k === 'notice') F[k] = '';
-    else F[k] = [];
-    search();
+    [F, A].forEach((o) => {
+      if (k.startsWith('job:')) o.jobs = o.jobs.filter((j) => j !== k.slice(4));
+      else if (k.startsWith('slot:')) o.slots = o.slots.filter((s) => s !== k.slice(5));
+      else if (k === 'kw') o.kw = '';
+      else if (k === 'memoEmpty') o.memoEmpty = false;
+      else if (k === 'date' || k === 'notice') o[k] = '';
+      else o[k] = [];
+    });
+    if (k === 'kw') $('kwIn').value = '';
+    refresh();
   });
 
   // ---------- 選択 ----------
@@ -527,7 +545,7 @@
   $('mdClose').onclick = closeModal;
   $('mdCancel').onclick = closeModal;
   $('ov').onclick = closeModal;
-  $('mdApply').onclick = () => { F.jobs = [...M.jobs]; F.slots = [...M.slots]; closeModal(); search(); };
+  $('mdApply').onclick = () => { F.jobs = [...M.jobs]; F.slots = [...M.slots]; closeModal(); changed(); };
   $('kseg').onclick = (e) => { const s = e.target.closest('[data-s]'); if (s) { M.season = s.dataset.s; M.focus = null; renderModal(); } };
   $('mtabs').onclick = (e) => { const t = e.target.closest('[data-t]'); if (t) { M.tab = t.dataset.t; renderModal(); } };
   $('mdQ').oninput = () => { M.q = $('mdQ').value.trim(); renderModal(); };
