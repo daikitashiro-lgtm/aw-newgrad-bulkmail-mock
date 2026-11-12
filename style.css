@@ -175,7 +175,9 @@ td.cs { padding-left: 0; }
 .it.focus .slotlk { background: #1FA9E1; color: #fff; border-color: #1FA9E1; }
 .picked { font-size: 10px; color: #fff; background: #1FA9E1; border-radius: 2px; padding: 0 5px; margin-left: 6px; }
 .rh { padding: 10px 14px 8px; border-bottom: 1px solid #E5E5E5; background: #fff; flex: none; }
-.rh .t { font-weight: 700; }
+.rh { position: relative; }
+.rh .rx { position: absolute; right: 12px; top: 8px; font-size: 18px; color: #999; cursor: pointer; line-height: 1; }
+.rh .t { font-weight: 700; padding-right: 24px; }
 .rh .t span { font-weight: 400; color: #888; font-size: 12px; margin-left: 4px; }
 .rh .all { font-size: 11px; color: #1FA9E1; text-decoration: underline; cursor: pointer; display: inline-block; margin-top: 6px; }
 .slots { flex: 1; overflow-y: auto; }
