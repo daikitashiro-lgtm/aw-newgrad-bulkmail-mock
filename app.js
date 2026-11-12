@@ -194,7 +194,7 @@
 
   function renderApplied() {
     const tags = [];
-    if (A.years.length) tags.push(['years', `卒業年度：${A.years.map(yearText).join('、')}`]);
+    if (A.years.length) tags.push(['years', `卒年度：${A.years.map(yearText).join('、')}`]);
     A.jobs.forEach((j) => tags.push([`job:${j}`, jobLabel(j)]));
     A.slots.forEach((s) => { const [jid, sid] = s.split(':'); tags.push([`slot:${s}`, `${jobById(jid).name}：${slotLabel(jid, sid)}`]); });
     if (A.kw) tags.push(['kw', `フリーワード：${A.kw}`]);
@@ -314,7 +314,7 @@
   }
   document.addEventListener('click', () => closeDDs());
 
-  multiDD('yearBtn', 'yearDD', '学生の卒業年度（複数選べます）', [...YEARS, 'other'].map((y) => ({ v: y, t: yearText(y) })), () => F.years, (v) => { F.years = v; });
+  multiDD('yearBtn', 'yearDD', '学生の卒年度（複数選べます）', [...YEARS, 'other'].map((y) => ({ v: y, t: yearText(y) })), () => F.years, (v) => { F.years = v; });
   // ---------- 応募日カレンダー（期間指定） ----------
   const TODAY = new Date(2026, 10, 11);
   const cal = { y: 2026, m: 10, from: null, to: null };
@@ -673,7 +673,7 @@
         const t = TEMPLATES.find((x) => x.id === e.target.value);
         if (!t) { X.tpl = ''; return; }
         const apply = () => { X.tpl = t.id; X.subj = t.subj; X.body = t.body; renderMail(); };
-        if (X.body.trim()) confirmDlg('本文を差し替えますか？', '入力中の件名と本文は、テンプレートの内容に置き換わります。', '差し替える', apply, () => { e.target.value = X.tpl; });
+        if (X.subj.trim() || X.body.trim()) confirmDlg('件名と本文を差し替えますか？', '入力中の件名と本文は、テンプレートの内容に置き換わります。', '差し替える', apply, () => { e.target.value = X.tpl; });
         else apply();
       };
       body.querySelectorAll('.mxtg').forEach((g) => { g.onclick = () => {
@@ -695,7 +695,7 @@
           ${X.showTo ? `<div class="mxto">${apps.map((a) => { const j = jobById(a.job); return `<div class="tr"><span class="nm2">${esc(a.name)}</span><span class="jb">[${j.id}] ${esc(j.name)}</span><span class="rm" data-rm="${a.id}">✕ 外す</span></div>`; }).join('') || '<div class="tr">宛先がありません。</div>'}</div>` : ''}
           ${apps.length ? '' : '<div class="mxerr">宛先が0件です。戻って選び直してください。</div>'}</div></div>
         <div class="mxr"><div class="mxl flat">件名</div><div class="mxv flat">${first ? esc(fill(X.subj, first)) : esc(X.subj)}</div></div>
-        <div class="mxr"><div class="mxl flat">本文</div><div class="mxv flat"><div class="mxprev"><div class="ph">${first ? `プレビュー：宛先の1人目（${esc(first.name)}さん）で置換タグを置き換えて表示しています` : 'プレビュー'}</div><div class="pb">${esc(first ? fill(X.body, first) : X.body)}</div></div></div></div>
+        <div class="mxr"><div class="mxl flat">本文</div><div class="mxv flat"><div class="mxprev"><div class="ph">${first ? `プレビュー：宛先の1件目（${esc(first.name)}さん）で置換タグを置き換えて表示しています` : 'プレビュー'}</div><div class="pb">${esc(first ? fill(X.body, first) : X.body)}</div></div></div></div>
         <div class="mxr"><div class="mxl flat">添付ファイル</div><div class="mxv flat">${X.files.length ? `<div class="mxchips" style="margin:0">${X.files.map((f) => `<span class="mxchip">${esc(f.name)}<span class="sz">${fsize(f.size)}</span></span>`).join('')}</div>` : 'なし'}</div></div>
         <div class="mxr"><div class="mxl">送信タイミング</div><div class="mxv mxtime">
           <div class="wopt" data-w="now"><span class="rd ${X.when === 'now' ? 'on' : ''}"></span>今すぐ送る</div>
@@ -764,6 +764,7 @@
         <li>予約は、送信予定の5分前まで取り消せます。</li>
         <li>宛先は件数だけを出します。</li>
         <li>未達があったときは、通知用メールアドレスにもお知らせが届きます。</li>
+        <li>完了のあとも、不達メールが返ってくると未達件数が増えることがあります。</li>
       </ul>
       <div class="hhead"><span>状態</span><span>配信日時・件名</span><span>宛先</span><span></span></div>
       ${rows.map((h) => {
