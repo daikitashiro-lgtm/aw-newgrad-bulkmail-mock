@@ -718,7 +718,6 @@
   function renderHist() {
     const rows = [...HIST].sort((a, b) => b.at - a.at);
     $('hBody').innerHTML = `<ul class="mxul">
-        <li>予約済み・送信中・完了を、新しい順に出します。</li>
         <li>予約は、送信予定の5分前まで取り消せます。</li>
         <li>宛先は件数だけを出します。</li>
         <li>未達があったときは、通知用メールアドレスにもお知らせが届きます。</li>
