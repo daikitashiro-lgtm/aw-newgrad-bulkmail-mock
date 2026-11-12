@@ -10,14 +10,14 @@
     { id: '1234587', type: 'course', season: 'IS', name: '秋の1day仕事体験（東京）', years: ['28', '29'], created: '2026/10/10', posted: true, place: '東京都・本社' },
     { id: '1234582', type: 'course', season: 'IS', name: '夏の1day仕事体験（大阪）', years: ['28'], created: '2026/06/20', posted: false, place: '大阪府・大阪支社' },
     { id: '1234581', type: 'course', season: 'IS', name: '夏のインターンシップ（3days）', years: ['28'], created: '2026/06/15', posted: true, place: '東京都・本社' },
-    { id: '1234570', type: 'seminar', season: 'main', name: '会社説明会・座談会', years: ['27', '28'], created: '2026/11/02', posted: true, place: '東京都' },
+    { id: '1234570', type: 'seminar', season: 'main', name: '会社説明会・座談会', years: ['27'], created: '2026/11/02', posted: true, place: '東京都' },
     { id: '1234575', type: 'entry', season: 'main', name: '株式会社サンプル 企業エントリー', years: ['27'], created: '2026/10/28', posted: true, place: '' },
     { id: '1234580', type: 'course', season: 'main', name: '総合職コース（関西）', years: ['27'], created: '2026/10/20', posted: true, place: '大阪府・大阪支社' },
     { id: '1234573', type: 'seminar', season: 'main', name: '大阪会場 会社説明会', years: ['27'], created: '2026/10/15', posted: true, place: '大阪府' },
-    { id: '1234569', type: 'course', season: 'main', name: '営業職コース', years: ['27', '28'], created: '2026/10/03', posted: true, place: '東京都・本社／大阪府・大阪支社' },
-    { id: '1234567', type: 'course', season: 'main', name: '総合職コース', years: ['27', '28'], created: '2026/10/01', posted: true, place: '東京都・本社' },
+    { id: '1234569', type: 'course', season: 'main', name: '営業職コース', years: ['27'], created: '2026/10/03', posted: true, place: '東京都・本社／大阪府・大阪支社' },
+    { id: '1234567', type: 'course', season: 'main', name: '総合職コース', years: ['27'], created: '2026/10/01', posted: true, place: '東京都・本社' },
     { id: '1234568', type: 'course', season: 'main', name: 'エンジニアコース', years: ['28'], created: '2026/09/20', posted: true, place: '東京都・本社' },
-    { id: '1234572', type: 'seminar', season: 'main', name: 'エンジニア向け説明会', years: ['27', '28'], created: '2026/09/15', posted: true, place: 'オンライン' },
+    { id: '1234572', type: 'seminar', season: 'main', name: 'エンジニア向け説明会', years: ['28'], created: '2026/09/15', posted: true, place: 'オンライン' },
   ];
   const SLOTS = {
     '1234570': [
