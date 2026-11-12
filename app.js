@@ -108,7 +108,7 @@
   const within = (d, days) => (new Date(2026, 10, 11) - d) / 86400000 < days;
   function filterApps() {
     return APPS.filter((a) => {
-      if (F.years.length && !F.years.includes(YEARS.includes(a.year) ? a.year : 'other')) return false;
+      if (F.years.length && (!a.year || !F.years.includes(YEARS.includes(a.year) ? a.year : 'other'))) return false;
       if (F.jobs.length || F.slots.length) {
         const hitJob = F.jobs.includes(a.job);
         const hitSlot = F.slots.some((s) => { const [jid, sid] = s.split(':'); return jid === a.job && (sid === 'none' ? a.slot === null : a.slot === sid); });
