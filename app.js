@@ -482,8 +482,8 @@
       const ns = [...M.slots].filter((s) => s.startsWith(j.id + ':')).length;
       return `<div class="it ${on ? 'sel1' : ''} ${M.focus === j.id ? 'focus' : ''} ${j.posted ? '' : 'ended'}" data-j="${j.id}">
         <span class="box ${on ? 'on' : ''}" data-check="${j.id}"></span>
-        <div class="main"><div class="t1"><span class="ty ${tc}">${tl}</span>${esc(j.name)}${on && j.type === 'seminar' ? '<span class="picked">全日程を選択中</span>' : ns ? `<span class="picked">${ns}枠を選択中</span>` : ''}</div>
-        <div class="t2">求人番号 ${j.id}・${j.years.map((y) => y + '卒').join('、')}${j.posted ? '' : '・掲載終了'}</div></div>
+        <div class="main"><div class="jchips">${j.years.map((y) => `<span class="jchip">正社員 - 新卒${y}卒</span>`).join('')}<span class="jchip">${tl}</span></div><div class="t1">${esc(j.name)}${on && j.type === 'seminar' ? '<span class="picked">全日程を選択中</span>' : ns ? `<span class="picked">${ns}枠を選択中</span>` : ''}</div>
+        <div class="t2">求人番号 ${j.id}${j.posted ? '' : '・掲載終了'}</div></div>
         <div class="r">応募 ${appsOfJob(j.id).length}件</div>
         ${j.type === 'seminar' ? `<span class="slotlk">日程枠 ${SLOTS[j.id].length} ›</span>` : ''}</div>`;
     }).join('') : '<div class="rempty">条件に合う求人はありません。</div>';
