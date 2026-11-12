@@ -92,6 +92,7 @@
   });
   APPS.forEach((a) => { if (a.status === '面接日確定' && a.id % 2 === 0) a.labels.push(['pk', '本日面接あり']); });
   APPS.sort((a, b) => b.date - a.date || a.id - b.id);
+  APPS.forEach((a) => { if (a.name === '石井 陸') a.manual = true; });
   const jobById = (id) => JOBS.find((j) => j.id === id);
 
   const YEARS = ['26', '27', '28', '29', '30', '31'];
@@ -657,6 +658,8 @@
     const body = $('xBody'); const foot = $('xFoot');
     $('xmd').classList.toggle('narrow', X.step === 'done');
     const apps = X.ids.map((id) => APPS.find((a) => a.id === id));
+    const nManual = apps.filter((a) => a.manual).length;
+    const nSend = apps.length - nManual;
     if (X.step === 'edit') {
       $('xTitle').textContent = 'メールを作成';
       body.innerHTML = `
@@ -692,8 +695,9 @@
       const err = schedErr();
       body.innerHTML = `
         <div class="mxr"><div class="mxl flat">宛先</div><div class="mxv flat"><span class="mxcnt"><b>${apps.length}</b>件</span><span class="mxlk" id="xToTgl">${X.showTo ? '宛先を閉じる ▲' : '宛先を確認する（1件ずつ外せます） ▼'}</span>
-          ${X.showTo ? `<div class="mxto">${apps.map((a) => { const j = jobById(a.job); return `<div class="tr"><span class="nm2">${esc(a.name)}</span><span class="jb">[${j.id}] ${esc(j.name)}</span><span class="rm" data-rm="${a.id}">✕ 外す</span></div>`; }).join('') || '<div class="tr">宛先がありません。</div>'}</div>` : ''}
-          ${apps.length ? '' : '<div class="mxerr">宛先が0件です。戻って選び直してください。</div>'}</div></div>
+          ${X.showTo ? `<div class="mxto">${apps.map((a) => { const j = jobById(a.job); return `<div class="tr"><span class="nm2">${esc(a.name)}</span><span class="jb">[${j.id}] ${esc(j.name)}${a.manual ? '<span class="mn">手動登録・送りません</span>' : ''}</span><span class="rm" data-rm="${a.id}">✕ 外す</span></div>`; }).join('') || '<div class="tr">宛先がありません。</div>'}</div>` : ''}
+          ${nManual ? `<div class="mxwarn">メールを送れない応募（手動登録）${nManual}件には送りません。送るのは${nSend}件です。</div>` : ''}
+          ${nSend ? '' : '<div class="mxerr">送れる宛先が0件です。戻って選び直してください。</div>'}</div></div>
         <div class="mxr"><div class="mxl flat">件名</div><div class="mxv flat">${first ? esc(fill(X.subj, first)) : esc(X.subj)}</div></div>
         <div class="mxr"><div class="mxl flat">本文</div><div class="mxv flat"><div class="mxprev"><div class="ph">${first ? `プレビュー：宛先の1件目（${esc(first.name)}さん）で置換タグを置き換えて表示しています` : 'プレビュー'}</div><div class="pb">${esc(first ? fill(X.body, first) : X.body)}</div></div></div></div>
         <div class="mxr"><div class="mxl flat">添付ファイル</div><div class="mxv flat">${X.files.length ? `<div class="mxchips" style="margin:0">${X.files.map((f) => `<span class="mxchip">${esc(f.name)}<span class="sz">${fsize(f.size)}</span></span>`).join('')}</div>` : 'なし'}</div></div>
@@ -704,10 +708,10 @@
             <select id="xHH">${Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0')).map((h) => `<option ${h === X.hh ? 'selected' : ''}>${h}</option>`).join('')}</select>:<select id="xMI">${['00', '10', '20', '30', '40', '50'].map((m) => `<option ${m === X.mi ? 'selected' : ''}>${m}</option>`).join('')}</select></span></div>
           <div class="mxerr" id="xSchedErr">${esc(err)}</div>
           <div class="mxnote">予約できるのは7日後までです。予約は、送信予定の5分前まで一括送付履歴から取り消せます。</div>
-          <div class="mxfix">受け付けた時点の宛先${apps.length}件と添付ファイルで送ります。予約した日時に、一覧の絞り込みはやり直しません。</div>
+          <div class="mxfix">受け付けた時点の宛先${nSend}件と添付ファイルで送ります。予約した日時に、一覧の絞り込みはやり直しません。</div>
         </div></div>`;
       const label = X.when === 'at' ? '予約する' : '送信する';
-      foot.innerHTML = `<span class="sp"></span><span class="mbtn" id="xBack">戻る</span><span class="mbtn pr ${!apps.length || err || X.sending ? 'dis' : ''}" id="xSend">${X.sending ? '受け付けています…' : label}</span>`;
+      foot.innerHTML = `<span class="sp"></span><span class="mbtn" id="xBack">戻る</span><span class="mbtn pr ${!nSend || err || X.sending ? 'dis' : ''}" id="xSend">${X.sending ? '受け付けています…' : label}</span>`;
       $('xToTgl').onclick = () => { X.showTo = !X.showTo; renderMail(); };
       body.querySelectorAll('[data-rm]').forEach((r) => { r.onclick = () => { X.ids = X.ids.filter((id) => id !== Number(r.dataset.rm)); renderMail(); }; });
       body.querySelectorAll('[data-w]').forEach((l) => { l.onclick = (e) => { if (e.target.closest('.when') && X.when === 'at') return; if (X.when !== l.dataset.w) { X.when = l.dataset.w; renderMail(); } }; });
@@ -716,21 +720,21 @@
       $('xMI').onchange = (e) => { X.mi = e.target.value; renderMail(); };
       $('xBack').onclick = () => { X.step = 'edit'; renderMail(); };
       $('xSend').onclick = () => {
-        if (X.sending || !apps.length || schedErr()) return;
+        if (X.sending || !nSend || schedErr()) return;
         X.sending = true; renderMail();
         setTimeout(() => { X.at = X.when === 'at' ? new Date(`${X.date}T${X.hh}:${X.mi}:00`) : null; X.step = 'done'; renderMail(); }, 900);
       };
     } else {
       $('xTitle').textContent = '受け付けました';
       body.innerHTML = `<div class="mxdone"><div class="h">${X.at ? '送信の予約を受け付けました。' : '送信を受け付けました。'}</div><div class="s">結果は、一覧左下の<span class="mxlk" data-hist="1" style="margin:0">「一括送付履歴を確認」</span>から確認できます。${X.at ? '予約は、送信予定の5分前まで取り消せます。' : '受け付けた順に送ります。'}</div>
-        <div class="mxkv"><span class="k">件名</span><span>${esc(X.subj)}</span><span class="k">宛先</span><span>${apps.length}件</span><span class="k">送信予定</span><span>${X.at ? fmtWhen(X.at, true) : '今すぐ'}</span><span class="k">添付ファイル</span><span>${X.files.length ? X.files.map((f) => esc(f.name)).join('<br>') : 'なし'}</span></div></div>`;
+        <div class="mxkv"><span class="k">件名</span><span>${esc(X.subj)}</span><span class="k">宛先</span><span>${nSend}件${nManual ? `（手動登録の${nManual}件は送りません）` : ''}</span><span class="k">送信予定</span><span>${X.at ? fmtWhen(X.at, true) : '今すぐ'}</span><span class="k">添付ファイル</span><span>${X.files.length ? X.files.map((f) => esc(f.name)).join('<br>') : 'なし'}</span></div></div>`;
       foot.innerHTML = '<span class="sp"></span><span class="mbtn" id="xBack">閉じる</span>';
       $('xBack').onclick = finishMail;
     }
   }
   function finishMail() {
     closeMail();
-    HIST.push({ id: `h${Date.now()}`, st: X.at ? 'rsv' : 'run', at: X.at || new Date(), subj: X.subj, count: X.ids.length, ids: [...X.ids], body: X.body, files: X.files.map((f) => f.name), fail: [] });
+    HIST.push({ id: `h${Date.now()}`, st: X.at ? 'rsv' : 'run', at: X.at || new Date(), subj: X.subj, count: X.ids.length, manual: X.ids.filter((id) => APPS.find((a) => a.id === id).manual).length, ids: [...X.ids], body: X.body, files: X.files.map((f) => f.name), fail: [] });
     syncFromHist();
     selected = new Set();
     render();
@@ -779,7 +783,7 @@
             ${nf ? `<div class="hfail">未達の学生：${h.fail.map(([n, r]) => `<b>${esc(n)}</b>（${esc(r)}）`).join('、')}</div>` : ''}
             <span class="mxlk" style="margin:0" data-body="${h.id}">${h.st === 'rsv' ? '送る本文' : '送った本文'}を${open ? '閉じる ▲' : '見る ▼'}</span>
             ${open ? `<div class="hbody">${esc(h.body)}</div>` : ''}</div>
-          <div class="hn">${h.st === 'done' ? `送付 ${h.count - nf - (h.del || 0)}件${nf ? `<br><span class="red">未達 ${nf}件</span>` : ''}${h.del ? `<br><span class="gy2">応募者削除 ${h.del}件（送らず）</span>` : ''}` : `${h.count}件`}</div>
+          <div class="hn">${h.st === 'done' ? `送付 ${h.count - nf - (h.del || 0) - (h.manual || 0)}件${nf ? `<br><span class="red">未達 ${nf}件</span>` : ''}${h.del ? `<br><span class="gy2">応募者削除 ${h.del}件（送らず）</span>` : ''}` : `${h.count - (h.manual || 0)}件`}${h.manual ? `<br><span class="gy2">手動登録 ${h.manual}件（送らず）</span>` : ''}</div>
           <div class="hop">${op}</div></div>`;
       }).join('')}`;
   }
@@ -820,7 +824,7 @@
 
   search();
   if (location.hash.startsWith('#mail')) {
-    selected = new Set(results.slice(0, 3).map((a) => a.id)); renderTable(); renderBar(); openMail();
+    selected = new Set(results.slice(0, 4).map((a) => a.id)); renderTable(); renderBar(); openMail();
     if (location.hash !== '#mail') { const t = TEMPLATES[0]; Object.assign(X, { tpl: t.id, subj: t.subj, body: t.body, files: [{ name: '会社説明会のご案内.pdf', size: 482000 }] }); }
     if (location.hash === '#mail-confirm' || location.hash === '#mail-at' || location.hash === '#mail-done') X.step = 'confirm';
     if (location.hash === '#mail-at' || location.hash === '#mail-done') X.when = 'at';
