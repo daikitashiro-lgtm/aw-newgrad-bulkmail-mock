@@ -741,7 +741,7 @@
   const HIST = [
     { id: 'h1', st: 'rsv', at: new Date(2026, 11, 1, 10, 0), subj: '【12/5開催】会社説明会のご案内', count: 46, ids: [], body: TEMPLATES[0].body, files: ['会社説明会のご案内.pdf'], fail: [] },
     { id: 'h2', st: 'run', at: new Date(2026, 10, 11, 17, 30), subj: '【12/5開催】会社説明会のご案内', count: 52, ids: [], body: TEMPLATES[0].body, files: [], fail: [] },
-    { id: 'h3', st: 'done', at: new Date(2026, 10, 10, 11, 25), subj: '明日の会社説明会のご案内', count: 32, ids: [], body: TEMPLATES[1].body.replaceAll('面接', '会社説明会'), files: ['当日のご案内.pdf'], fail: [['青空 三郎', 'メールアドレスの誤り'], ['山田 結衣', '応募者削除']] },
+    { id: 'h3', st: 'done', at: new Date(2026, 10, 10, 11, 25), subj: '明日の会社説明会のご案内', count: 32, ids: [], body: TEMPLATES[1].body.replaceAll('面接', '会社説明会'), files: ['当日のご案内.pdf'], fail: [['青空 三郎', 'メールアドレスの誤り']], del: 1 },
     { id: 'h4', st: 'done', at: new Date(2026, 10, 6, 9, 0), subj: 'ES提出のお願い', count: 18, ids: [], body: TEMPLATES[2].body.replace('・履歴書（写真付き）\n・職務経歴書', '・エントリーシート'), files: ['ES記入用紙.docx'], fail: [] },
   ];
   const ST_LABEL = { rsv: '予約済み', run: '送信中', done: '完了' };
@@ -779,7 +779,7 @@
             ${nf ? `<div class="hfail">未達の学生：${h.fail.map(([n, r]) => `<b>${esc(n)}</b>（${esc(r)}）`).join('、')}</div>` : ''}
             <span class="mxlk" style="margin:0" data-body="${h.id}">${h.st === 'rsv' ? '送る本文' : '送った本文'}を${open ? '閉じる ▲' : '見る ▼'}</span>
             ${open ? `<div class="hbody">${esc(h.body)}</div>` : ''}</div>
-          <div class="hn">${h.st === 'done' ? `送付 ${h.count - nf}件${nf ? `<br><span class="red">未達 ${nf}件</span>` : ''}` : `${h.count}件`}</div>
+          <div class="hn">${h.st === 'done' ? `送付 ${h.count - nf - (h.del || 0)}件${nf ? `<br><span class="red">未達 ${nf}件</span>` : ''}${h.del ? `<br><span class="gy2">応募者削除 ${h.del}件（送らず）</span>` : ''}` : `${h.count}件`}</div>
           <div class="hop">${op}</div></div>`;
       }).join('')}`;
   }
