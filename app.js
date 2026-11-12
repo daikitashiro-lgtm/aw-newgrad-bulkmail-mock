@@ -754,11 +754,11 @@
     const runs = HIST.filter((h) => h.st === 'run').sort((a, b) => b.at - a.at);
     const rsvs = HIST.filter((h) => h.st === 'rsv').sort((a, b) => a.at - b.at);
     if (runs.length) MI.run = runs[0].subj;
-    if (rsvs.length) MI.rsv = { when: fmtWhen(rsvs[0].at), subj: rsvs[0].subj, count: rsvs[0].count };
+    if (rsvs.length) MI.rsv = { when: fmtWhen(rsvs[0].at), subj: rsvs[0].subj, count: rsvs[0].count - (rsvs[0].manual || 0) };
     MI.nRsv = rsvs.length;
     $('demoMail').value = runs.length ? (rsvs.length ? 'runrsv' : 'run') : (rsvs.length ? (rsvs.length > 1 ? 'rsv2' : 'rsv') : 'none');
     const rsvIds = new Set(rsvs.flatMap((h) => h.ids));
-    APPS.forEach((a) => { a.labels = a.labels.filter((l) => l[1] !== '送信予約中' || a.dummyRsv); if (rsvIds.has(a.id)) a.labels.push(['gy', '送信予約中']); });
+    APPS.forEach((a) => { a.labels = a.labels.filter((l) => l[1] !== '送信予約中' || a.dummyRsv); if (rsvIds.has(a.id) && !a.manual) a.labels.push(['gy', '送信予約中']); });
   }
   APPS.forEach((a) => { if (a.labels.some((l) => l[1] === '送信予約中')) a.dummyRsv = true; });
   const canCancel = (h) => h.at.getTime() - Date.now() > 5 * 60000;
