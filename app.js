@@ -695,7 +695,7 @@
       const err = schedErr();
       body.innerHTML = `
         <div class="mxr"><div class="mxl flat">宛先</div><div class="mxv flat"><span class="mxcnt"><b>${apps.length}</b>件</span><span class="mxlk" id="xToTgl">${X.showTo ? '宛先を閉じる ▲' : '宛先を確認する（1件ずつ外せます） ▼'}</span>
-          ${X.showTo ? `<div class="mxto">${apps.map((a) => { const j = jobById(a.job); return `<div class="tr"><span class="nm2">${esc(a.name)}</span><span class="jb">[${j.id}] ${esc(j.name)}${a.manual ? '<span class="mn">手動登録・送りません</span>' : ''}</span><span class="rm" data-rm="${a.id}">✕ 外す</span></div>`; }).join('') || '<div class="tr">宛先がありません。</div>'}</div>` : ''}
+          ${X.showTo ? `<div class="mxto">${apps.map((a) => { const j = jobById(a.job); return `<div class="tr"><span class="nm2">${esc(a.name)}</span><span class="jb">[${j.id}] ${esc(j.name)}${j.type === 'seminar' ? `<span class="sl2">${a.slot ? (() => { const s = SLOTS[j.id].find((x) => x.id === a.slot); return `${s.label}　${esc(s.venue)}`; })() : '未予約'}</span>` : ''}${a.manual ? '<span class="mn">手動登録・送りません</span>' : ''}</span><span class="rm" data-rm="${a.id}">✕ 外す</span></div>`; }).join('') || '<div class="tr">宛先がありません。</div>'}</div>` : ''}
           ${nManual ? `<div class="mxwarn">メールを送れない応募（手動登録）${nManual}件には送りません。送るのは${nSend}件です。</div>` : ''}
           ${nSend ? '' : '<div class="mxerr">送れる宛先が0件です。戻って選び直してください。</div>'}</div></div>
         <div class="mxr"><div class="mxl flat">件名</div><div class="mxv flat">${first ? esc(fill(X.subj, first)) : esc(X.subj)}</div></div>
