@@ -465,7 +465,7 @@
   function renderModal() {
     const isIS = M.season === 'IS';
     $('mdDesc').textContent = isIS
-      ? '絞り込みたい求人を選んでください。IS期の求人は、コース求人と企業エントリー求人だけです（日程枠はありません）。'
+      ? '絞り込みたい求人を選んでください。'
       : '絞り込みたい求人を選んでください。説明会日程求人は「日程枠 ›」を押すと、日程枠や「未予約」まで選べます（任意）。';
     const cnt = (s) => JOBS.filter((j) => hasApps(j.id) && (s === 'all' || j.season === s) && (M.ended || j.posted)).length;
     $('kseg').innerHTML = [['IS', 'IS期の求人'], ['main', '就活期の求人'], ['all', 'すべて']].map(([k, t]) => `<span class="${M.season === k ? 'on' : ''}" data-s="${k}">${t}<b>${cnt(k)}</b></span>`).join('');
