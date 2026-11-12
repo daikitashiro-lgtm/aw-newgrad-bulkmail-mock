@@ -207,7 +207,7 @@
       const on = selected.has(a.id);
       return `<tr class="${on ? 'rsel' : ''}"><td><span class="box ${on ? 'on' : ''}" data-id="${a.id}"></span></td>
         <td>${lbls}<div class="dt">${fmt(a.date)}</div><div class="nm">${esc(a.name)}</div><div class="mt">${a.age}歳／${a.gender}／${a.school}／${a.pref}</div></td>
-        <td><span class="jt">正社員・新卒${a.year}卒</span><div>[${j.id}] ${esc(j.name)}</div>${sub ? `<div class="js">${esc(sub)}</div>` : ''}</td>
+        <td><span class="jt">${j.season === 'IS' ? 'インターンシップ&キャリア' : `正社員・新卒${a.year}卒`}</span><div>[${j.id}] ${esc(j.name)}</div>${sub ? `<div class="js">${esc(sub)}</div>` : ''}</td>
         <td class="cm">${mm}</td><td class="cs">${st}</td><td class="ops">編集<br>削除</td></tr>`;
     }).join('');
     const pages = Math.max(1, Math.ceil(results.length / PER));
@@ -486,7 +486,7 @@
       const ns = [...M.slots].filter((s) => s.startsWith(j.id + ':')).length;
       return `<div class="it ${on ? 'sel1' : ''} ${M.focus === j.id ? 'focus' : ''} ${j.posted ? '' : 'ended'}" data-j="${j.id}">
         <span class="box ${on ? 'on' : ''}" data-check="${j.id}"></span>
-        <div class="main"><div class="jchips">${j.years.map((y) => `<span class="jchip">正社員 - 新卒${y}卒</span>`).join('')}<span class="jchip">${tl}</span></div><div class="t1">${esc(j.name)}${on && j.type === 'seminar' ? '<span class="picked">全日程を選択中</span>' : ns ? `<span class="picked">${ns}枠を選択中</span>` : ''}</div>
+        <div class="main"><div class="jchips">${j.season === 'IS' ? '<span class="jchip">インターンシップ&amp;キャリア</span>' : j.years.map((y) => `<span class="jchip">正社員 - 新卒${y}卒</span>`).join('')}<span class="jchip">${tl}</span></div><div class="t1">${esc(j.name)}${on && j.type === 'seminar' ? '<span class="picked">全日程を選択中</span>' : ns ? `<span class="picked">${ns}枠を選択中</span>` : ''}</div>
         <div class="t2">求人番号 ${j.id}${j.posted ? '' : '・掲載終了'}</div></div>
         <div class="r">応募 ${appsOfJob(j.id).length}件</div>
         ${j.type === 'seminar' ? `<span class="slotlk">日程枠 ${SLOTS[j.id].length} ›</span>` : ''}</div>`;
