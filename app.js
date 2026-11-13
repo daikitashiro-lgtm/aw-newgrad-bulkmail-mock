@@ -450,7 +450,7 @@
   $('demoDl').onchange = renderAlerts;
 
   // ---------- コース・日程枠モーダル ----------
-  const M = { fs: null, q: '', more: false, focus: null, showPast: false, jobs: new Set(), slots: new Set() };
+  const M = { fs: null, q: '', more: false, focus: null, jobs: new Set(), slots: new Set() };
   const appsOfJob = (jid) => APPS.filter((a) => a.job === jid);
   const hasApps = (jid) => APPS.some((a) => a.job === jid);
   const allSlotKeys = (jid) => ['none', ...SLOTS[jid].map((x) => x.id)].map((sid) => `${jid}:${sid}`);
@@ -482,8 +482,9 @@
     ['type', '求人の種類', () => [['course', 'コース'], ['seminar', '説明会'], ['entry', '企業エントリー']], false],
     ['year', '求人の対象卒年', () => MD_YEARS.map((y) => [y, `${y}卒`]), true],
     ['post', '掲載状況', () => [['on', '掲載中'], ['off', '掲載終了・未掲載']], true],
+    ['past', '日程枠', () => [['on', '開催済みの日程枠も表示']], true],
   ];
-  const defaultFs = () => ({ season: new Set(['main']), type: new Set(['course', 'seminar', 'entry']), year: new Set(MD_YEARS), post: new Set(['on']) });
+  const defaultFs = () => ({ season: new Set(['main']), type: new Set(['course', 'seminar', 'entry']), year: new Set(MD_YEARS), post: new Set(['on']), past: new Set() });
   function visibleJobs() {
     const fs = M.fs;
     return JOBS.filter((j) => hasApps(j.id) && fs.season.has(j.season) && fs.type.has(j.type)
@@ -492,7 +493,7 @@
       .sort((a, b) => b.created.localeCompare(a.created));
   }
   function openModal() {
-    Object.assign(M, { fs: defaultFs(), q: '', more: false, focus: null, showPast: false, jobs: new Set(F.jobs), slots: new Set(F.slots) });
+    Object.assign(M, { fs: defaultFs(), q: '', more: false, focus: null, jobs: new Set(F.jobs), slots: new Set(F.slots) });
     $('mdQ').value = '';
     $('ov').classList.add('open'); $('md').classList.add('open');
     renderModal();
@@ -501,11 +502,9 @@
   function renderModal() {
     const fs = M.fs;
     const isIS = !fs.season.has('main');
-    $('mdDesc').textContent = isIS
-      ? '求人名の一部を入れて探し、絞り込みたい求人にチェックを付けてください。'
-      : '求人名の一部を入れて探し、絞り込みたい求人にチェックを付けてください。説明会は「日程枠を選ぶ」で日程枠ごとにも選べます。';
+    $('mdDesc').textContent = '探したいコース・日程枠にチェックを付けてください。';
     const d = defaultFs();
-    const moreSet = fs.year.size !== d.year.size || fs.post.size !== 1 || !fs.post.has('on');
+    const moreSet = fs.year.size !== d.year.size || fs.post.size !== 1 || !fs.post.has('on') || fs.past.size > 0;
     $('moreLk').textContent = M.more ? '∧ もっと絞るを閉じる' : `∨ もっと絞る${moreSet ? '（指定中）' : ''}`;
     $('frows').innerHTML = FROWS.filter((r) => !r[3] || M.more).map(([f, label, opts]) => `<div class="frow"><span class="fl">${label}</span>${opts().map(([v, t]) => {
       const dis = f === 'type' && v === 'seminar' && isIS;
@@ -538,12 +537,13 @@
     const row = (sid, t1, t2, rr, cls = '') => { const key = `${j.id}:${sid}`; const on = jobOn || M.slots.has(key); return `<div class="slr ${on ? 'on' : ''} ${cls}" data-slot="${key}"><span class="box ${on ? 'on' : ''}"></span><div class="main"><div>${t1}</div><div class="t2">${t2}</div></div><div class="r">${rr}</div></div>`; };
     let html = row('none', '日程なし', '開催日・場所は未定', '');
     let mon = '';
-    const list = M.showPast ? past.concat(up) : up;
+    const showPast = M.fs.past.has('on');
+    const list = showPast ? past.concat(up) : up;
     list.forEach((s) => {
       if (s.mon !== mon) { mon = s.mon; html += `<div class="mon">${mon}${s.past ? '（開催済み）' : ''}</div>`; }
       html += row(s.id, s.label, s.venue, '', s.past ? 'pastr' : '');
     });
-    return `<div class="sub"><div class="subh"><span class="cnt">これからの日程枠 ${up.length}件</span>${past.length ? `<label class="vsw" data-past="1"><span class="tr ${M.showPast ? 'on' : ''}"><span class="kn"></span></span>開催済みの日程枠も表示（${past.length}件）</label>` : ''}<span class="vbtn" data-allslots="${j.id}">${jobOn ? 'すべての日程枠の選択を外す' : 'すべての日程枠を選ぶ'}</span></div>
+    return `<div class="sub"><div class="subh"><span class="cnt">${showPast && past.length ? `日程枠 ${list.length}件（開催済みを含む）` : `これからの日程枠 ${up.length}件`}</span><span class="vbtn" data-allslots="${j.id}">${jobOn ? 'すべての日程枠の選択を外す' : 'すべての日程枠を選ぶ'}</span></div>
       ${html}</div>`;
   }
   $('kwTip').onclick = (e) => { e.preventDefault(); e.stopPropagation(); $('kwTip').classList.toggle('show'); };
@@ -563,6 +563,11 @@
     if (!l || l.classList.contains('dis')) return;
     e.preventDefault();
     const set = M.fs[l.dataset.f]; const v = l.dataset.v;
+    if (l.dataset.f === 'past') {
+      if (set.has(v)) set.delete(v); else set.add(v);
+      renderModal();
+      return;
+    }
     if (set.has(v)) {
       if (set.size === 1) { toast('最後の1つは外せません'); return; }
       set.delete(v);
@@ -573,17 +578,16 @@
   $('jobList').onclick = (e) => {
     const s = e.target.closest('[data-slot]');
     if (s) { toggleSlot(s.dataset.slot); renderModal(); return; }
-    if (e.target.closest('[data-past]')) { M.showPast = !M.showPast; renderModal(); return; }
     const al = e.target.closest('[data-allslots]');
     if (al) { const j = al.dataset.allslots; if (M.jobs.has(j)) { M.jobs.delete(j); clearSlots(j); } else { clearSlots(j); M.jobs.add(j); } renderModal(); return; }
     const x = e.target.closest('[data-exp]');
-    if (x) { M.focus = M.focus === x.dataset.exp ? null : x.dataset.exp; M.showPast = false; renderModal(); return; }
+    if (x) { M.focus = M.focus === x.dataset.exp ? null : x.dataset.exp; renderModal(); return; }
     const c = e.target.closest('[data-check]');
     if (c) { toggleJob(c.dataset.check); renderModal(); return; }
     const it = e.target.closest('[data-j]');
     if (!it) return;
     const j = jobById(it.dataset.j);
-    if (j.type === 'seminar') { M.focus = M.focus === j.id ? null : j.id; M.showPast = false; }
+    if (j.type === 'seminar') M.focus = M.focus === j.id ? null : j.id;
     else toggleJob(j.id);
     renderModal();
   };
