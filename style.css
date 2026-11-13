@@ -409,7 +409,8 @@ body.dirty table, body.dirty .pager, body.dirty .pinfo, body.dirty .empty { opac
 .sv3 .fw { width: 486px; max-width: none; flex: none; height: 40px; box-sizing: border-box; }
 .sv3 .r2 { display: flex; align-items: center; gap: 18px; margin-top: 14px; }
 .sv3 .r2 .cb { margin: 0; font-size: 12px; }
-.sv3 .more { margin-left: 0; font-size: 12px; }
+.sv3 .more { margin-left: 0; font-size: 12px; color: #777; }
+.sv3 .more:hover { color: #444; }
 .sv3 .sp { flex: 1; }
 .sv3 .clear { color: #1FA9E1; font-size: 12px; padding: 0; }
 .sv3 .clear.dis { color: #BBB; cursor: default; }
