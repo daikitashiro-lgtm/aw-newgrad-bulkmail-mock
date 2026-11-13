@@ -380,7 +380,7 @@
       changed();
     }
   });
-  multiDD('statusBtn', 'statusDD', '対応状況（複数選べます）', STATUSES.map((s) => ({ v: s, t: s })), () => F.statuses, (v) => { F.statuses = v; });
+  multiDD('statusBtn', 'statusDD', '対応状況（複数選べます）', STATUSES.map((s) => ({ v: s, t: s })), () => F.statuses, (v) => { F.statuses = v; }, true);
   singleDD('noticeBtn', 'noticeDD', [{ v: '', t: '新着／面接すべて' }, ...NOTICES.map((s) => ({ v: s, t: s }))], () => F.notice, (v) => { F.notice = v; });
 
   // ---------- 検索欄 ----------

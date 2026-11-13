@@ -416,3 +416,4 @@ body.dirty table, body.dirty .pager, body.dirty .pinfo, body.dirty .empty { opac
 .sv3 .clear.dis { color: #BBB; cursor: default; }
 .sv3 #searchBtn { height: 44px; padding: 0 34px; font-size: 15px; font-weight: 700; }
 .sv3 .detail { gap: 12px; }
+.sv3 .dd:not(#dateDD) { min-width: 0; width: 100%; box-sizing: border-box; }
