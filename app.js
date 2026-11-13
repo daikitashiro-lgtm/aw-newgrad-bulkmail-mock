@@ -288,7 +288,7 @@
 
   // ---------- ドロップダウン ----------
   function closeDDs(except) { document.querySelectorAll('.dd.open').forEach((d) => { if (d !== except) d.classList.remove('open'); }); }
-  function multiDD(btnId, ddId, title, options, getSel, setSel) {
+  function multiDD(btnId, ddId, title, options, getSel, setSel, noClear = false) {
     $(btnId).addEventListener('click', (e) => {
       e.stopPropagation();
       const dd = $(ddId);
@@ -296,7 +296,7 @@
       closeDDs(dd);
       const tmp = new Set(getSel());
       const draw = () => {
-        dd.innerHTML = `<div class="dh">${title}</div>${options.map((o) => `<label data-v="${esc(o.v)}"><span class="box ${tmp.has(o.v) ? 'on' : ''}"></span>${esc(o.t)}</label>`).join('')}<div class="df"><span data-a="clear">すべて解除</span><span class="ok" data-a="ok">決定</span></div>`;
+        dd.innerHTML = `<div class="dh">${title}</div>${options.map((o) => `<label data-v="${esc(o.v)}"><span class="box ${tmp.has(o.v) ? 'on' : ''}"></span>${esc(o.t)}</label>`).join('')}<div class="df">${noClear ? '<span></span>' : '<span data-a="clear">すべて解除</span>'}<span class="ok" data-a="ok">決定</span></div>`;
       };
       draw();
       dd.onclick = (ev) => {
@@ -323,7 +323,7 @@
   }
   document.addEventListener('click', () => closeDDs());
 
-  multiDD('yearBtn', 'yearDD', '応募者の卒年度（学歴に登録された卒業年度で絞ります。複数選べます）', [...YEARS, 'other'].map((y) => ({ v: y, t: yearText(y) })), () => F.years, (v) => { F.years = v; });
+  multiDD('yearBtn', 'yearDD', '学歴に登録された卒業年度', [...YEARS, 'other'].map((y) => ({ v: y, t: yearText(y) })), () => F.years, (v) => { F.years = v; }, true);
   // ---------- 応募日カレンダー（期間指定） ----------
   const TODAY = new Date(2026, 10, 11);
   const cal = { y: 2026, m: 10, from: null, to: null };
