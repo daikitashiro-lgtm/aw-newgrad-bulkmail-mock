@@ -167,7 +167,7 @@
   // ---------- 表示 ----------
   const ymd = (d) => `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
   const dateText = (r) => (r.to && r.to.getTime() !== r.from.getTime() ? `${ymd(r.from)}〜${ymd(r.to)}` : ymd(r.from));
-  const jobLabel = (jid) => { const j = jobById(jid); return j.type === 'seminar' ? `${j.name}：全日程（${SLOTS[jid].length}件・日程なしを含む）` : j.name; };
+  const jobLabel = (jid) => { const j = jobById(jid); return j.type === 'seminar' ? `${j.name}：全日程枠（${SLOTS[jid].length}件・日程なしを含む）` : j.name; };
   const slotLabel = (jid, sid) => (sid === 'none' ? '日程なし' : SLOTS[jid].find((s) => s.id === sid).label);
   function courseSummary() {
     const nj = F.jobs.length;
@@ -506,7 +506,7 @@
     const isIS = !fs.season.has('main');
     $('mdDesc').textContent = isIS
       ? '求人名の一部を入れて探し、絞り込みたい求人にチェックを付けてください。'
-      : '求人名の一部を入れて探し、絞り込みたい求人にチェックを付けてください。説明会は「日程を選ぶ」で日程ごとにも選べます。';
+      : '求人名の一部を入れて探し、絞り込みたい求人にチェックを付けてください。説明会は「日程枠を選ぶ」で日程枠ごとにも選べます。';
     const d = defaultFs();
     const moreSet = fs.year.size !== d.year.size || fs.post.size !== 1 || !fs.post.has('on');
     $('moreLk').textContent = M.more ? 'もっと絞る ▲' : `もっと絞る${moreSet ? '（指定中）' : ''} ▼`;
@@ -523,9 +523,9 @@
       const open = M.focus === j.id;
       return `<div class="it ${on || ns ? 'sel1' : ''} ${j.posted ? '' : 'ended'}" data-j="${j.id}">
         <span class="box ${on ? 'on' : ns ? 'part' : ''}" data-check="${j.id}"></span>
-        <div class="main"><div class="jchips">${j.season === 'IS' ? '<span class="jchip">インターンシップ&amp;キャリア</span>' : j.years.map((y) => `<span class="jchip">正社員 - 新卒${y}卒</span>`).join('')}<span class="jchip">${tl}</span></div><div class="t1">${esc(j.name)}${on && j.type === 'seminar' ? '<span class="picked">全日程を選択中</span>' : ns ? `<span class="picked">${ns}件の日程を選択中</span>` : ''}</div>
+        <div class="main"><div class="jchips">${j.season === 'IS' ? '<span class="jchip">インターンシップ&amp;キャリア</span>' : j.years.map((y) => `<span class="jchip">正社員 - 新卒${y}卒</span>`).join('')}<span class="jchip">${tl}</span></div><div class="t1">${esc(j.name)}${on && j.type === 'seminar' ? '<span class="picked">全日程枠を選択中</span>' : ns ? `<span class="picked">${ns}件の日程枠を選択中</span>` : ''}</div>
         <div class="t2">求人番号 ${j.id}${j.posted ? '' : '・掲載終了'}</div></div>
-        ${j.type === 'seminar' ? `<span class="slotlk ${open ? 'on' : ''}" data-exp="${j.id}">${open ? '日程を閉じる ▲' : '日程を選ぶ ▼'}</span>` : ''}</div>
+        ${j.type === 'seminar' ? `<span class="slotlk ${open ? 'on' : ''}" data-exp="${j.id}">${open ? '日程枠を閉じる ▲' : '日程枠を選ぶ ▼'}</span>` : ''}</div>
         ${open ? slotsHtml(j) : ''}`;
     }).join('') : '<div class="rempty">条件に合う求人はありません。</div>';
     $('panes').classList.add('full');
@@ -546,7 +546,7 @@
       if (s.mon !== mon) { mon = s.mon; html += `<div class="mon">${mon}${s.past ? '（開催済み）' : ''}</div>`; }
       html += row(s.id, s.label, s.venue, '', s.past ? 'pastr' : '');
     });
-    return `<div class="sub"><div class="subh"><span class="cnt">これからの日程 ${up.length}件</span>${past.length ? `<label class="vsw" data-past="1"><span class="tr ${M.showPast ? 'on' : ''}"><span class="kn"></span></span>開催済みの日程も表示（${past.length}件）</label>` : ''}<span class="vbtn" data-allslots="${j.id}">${jobOn ? 'すべての日程の選択を外す' : 'すべての日程を選ぶ'}</span></div>
+    return `<div class="sub"><div class="subh"><span class="cnt">これからの日程枠 ${up.length}件</span>${past.length ? `<label class="vsw" data-past="1"><span class="tr ${M.showPast ? 'on' : ''}"><span class="kn"></span></span>開催済みの日程枠も表示（${past.length}件）</label>` : ''}<span class="vbtn" data-allslots="${j.id}">${jobOn ? 'すべての日程枠の選択を外す' : 'すべての日程枠を選ぶ'}</span></div>
       ${html}</div>`;
   }
   $('kwTip').onclick = (e) => { e.preventDefault(); e.stopPropagation(); $('kwTip').classList.toggle('show'); };
