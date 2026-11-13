@@ -42,7 +42,7 @@ h1 { font-size: 21px; margin: 6px 0 22px; }
 .lb { color: #888; font-size: 12px; margin-right: 10px; }
 .on-v { color: #1FA9E1; font-weight: 700; }
 .pick .go { margin-left: 12px; color: #1FA9E1; font-size: 12px; }
-.fw { flex: 1; min-width: 0; height: 38px; border: 1px solid #C9C9C9; border-radius: 3px; background: #fff; display: flex; align-items: center; padding: 0 12px; }
+.fw { flex: 1; min-width: 0; max-width: 340px; height: 38px; border: 1px solid #C9C9C9; border-radius: 3px; background: #fff; display: flex; align-items: center; padding: 0 12px; }
 .fw .k { color: #888; font-size: 12px; margin-right: 10px; flex: none; }
 .fw input { border: 0; outline: 0; flex: 1; min-width: 0; font-size: 13px; background: transparent; }
 .fw input::placeholder { color: #AAA; font-size: 12px; }
@@ -55,6 +55,9 @@ h1 { font-size: 21px; margin: 6px 0 22px; }
 .box.on { background: #1FA9E1; border-color: #1FA9E1; }
 .box.on::after { content: "✓"; }
 .more { margin-left: auto; color: #1FA9E1; white-space: nowrap; cursor: pointer; }
+.row .cb { margin: 0 8px 0 4px; }
+.row .more { font-size: 12px; }
+.clear { white-space: nowrap; }
 .detail { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid #E0E0E0; gap: 8px; flex-wrap: wrap; }
 .detail.open { display: flex; }
 .chip { height: 34px; border: 1px solid #C9C9C9; border-radius: 3px; background: #fff; display: inline-flex; align-items: center; padding: 0 12px; gap: 8px; white-space: nowrap; cursor: pointer; }
