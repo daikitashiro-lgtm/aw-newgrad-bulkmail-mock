@@ -534,13 +534,12 @@
     const apps = appsOfJob(j.id);
     const jobOn = M.jobs.has(j.id);
     const row = (sid, t1, t2, rr, cls = '') => { const key = `${j.id}:${sid}`; const on = jobOn || M.slots.has(key); return `<div class="slr ${on ? 'on' : ''} ${cls}" data-slot="${key}"><span class="box ${on ? 'on' : ''}"></span><div class="main"><div>${t1}</div><div class="t2">${t2}</div></div><div class="r">${rr}</div></div>`; };
-    let html = row('none', '日程なし', '応募したが、まだ日程を予約していない人', `${apps.filter((a) => a.slot === null).length}件`);
+    let html = row('none', '日程なし', '応募したが、まだ日程を予約していない人', '');
     let mon = '';
     const list = M.showPast ? past.concat(up) : up;
     list.forEach((s) => {
       if (s.mon !== mon) { mon = s.mon; html += `<div class="mon">${mon}${s.past ? '（開催済み）' : ''}</div>`; }
-      const n = apps.filter((a) => a.slot === s.id).length;
-      html += row(s.id, s.label, s.venue, `予約 ${n}件／定員 ${s.cap}${n >= s.cap ? '<span class="fullb">満席</span>' : ''}`, s.past ? 'pastr' : '');
+      html += row(s.id, s.label, s.venue, '', s.past ? 'pastr' : '');
     });
     return `<div class="sub"><div class="subh"><span class="cnt">これからの日程 ${up.length}件</span>${past.length ? `<label class="vsw" data-past="1"><span class="tr ${M.showPast ? 'on' : ''}"><span class="kn"></span></span>開催済みの日程も表示（${past.length}件）</label>` : ''}<span class="vbtn" data-allslots="${j.id}">${jobOn ? 'すべての日程の選択を外す' : 'すべての日程を選ぶ'}</span></div>
       ${html}</div>`;
