@@ -542,7 +542,7 @@
       const n = apps.filter((a) => a.slot === s.id).length;
       html += row(s.id, s.label, s.venue, `予約 ${n}件／定員 ${s.cap}${n >= s.cap ? '<span class="fullb">満席</span>' : ''}`, s.past ? 'pastr' : '');
     });
-    return `<div class="sub"><div class="subh"><span class="cnt">これからの日程 ${up.length}件</span>${past.length ? `<label class="cb pastcb" data-past="1"><span class="box ${M.showPast ? 'on' : ''}"></span>開催済みの日程も表示（${past.length}件）</label>` : ''}<span class="all" data-allslots="${j.id}">${jobOn ? 'すべての日程の選択を外す' : 'すべての日程を選ぶ'}</span></div>
+    return `<div class="sub"><div class="subh"><span class="cnt">これからの日程 ${up.length}件</span>${past.length ? `<label class="vsw" data-past="1"><span class="tr ${M.showPast ? 'on' : ''}"><span class="kn"></span></span>開催済みの日程も表示（${past.length}件）</label>` : ''}<span class="vbtn" data-allslots="${j.id}">${jobOn ? 'すべての日程の選択を外す' : 'すべての日程を選ぶ'}</span></div>
       ${html}</div>`;
   }
   $('kwTip').onclick = (e) => { e.preventDefault(); e.stopPropagation(); $('kwTip').classList.toggle('show'); };

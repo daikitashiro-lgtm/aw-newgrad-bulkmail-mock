@@ -356,7 +356,12 @@ body.dirty table, body.dirty .pager, body.dirty .pinfo, body.dirty .empty { opac
 .subh .all { color: #1FA9E1; text-decoration: underline; cursor: pointer; margin-left: auto; }
 .subh { justify-content: flex-start; }
 .subh .cnt { margin-right: 18px; }
-.subh .pastcb { font-size: 12px; color: #444; cursor: pointer; }
+.subh .vsw { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: #444; cursor: pointer; }
+.subh .tr { width: 32px; height: 18px; border-radius: 9px; background: #C9C9C9; position: relative; flex: none; transition: background .15s; }
+.subh .tr .kn { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: left .15s; }
+.subh .tr.on { background: #1FA9E1; }
+.subh .tr.on .kn { left: 16px; }
+.subh .vbtn { margin-left: auto; font-size: 12px; color: #1FA9E1; border: 1px solid #A9DDF3; background: #fff; border-radius: 3px; padding: 4px 10px; cursor: pointer; }
 .sub .slr.pastr .main, .sub .slr.pastr .r { color: #999; }
 .sub .slr { padding: 7px 14px 7px 6px; background: transparent; }
 .sub .slr.on { background: #EEF8FD; }
