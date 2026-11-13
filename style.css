@@ -412,5 +412,6 @@ body.dirty table, body.dirty .pager, body.dirty .pinfo, body.dirty .empty { opac
 .sv3 .more { margin-left: 0; font-size: 12px; }
 .sv3 .sp { flex: 1; }
 .sv3 .clear { color: #1FA9E1; font-size: 12px; padding: 0; }
+.sv3 .clear.dis { color: #BBB; cursor: default; }
 .sv3 #searchBtn { height: 44px; padding: 0 34px; font-size: 15px; font-weight: 700; }
 .sv3 .detail { gap: 12px; }

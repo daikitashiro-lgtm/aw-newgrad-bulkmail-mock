@@ -161,6 +161,7 @@
     const d = isDirty();
     $('searchBtn').classList.toggle('hot', d);
     document.body.classList.toggle('dirty', d);
+    $('clearBtn').classList.toggle('dis', condKey({ ...F, kw: $('kwIn').value.trim() }) === condKey(EMPTY()));
     $('pend').innerHTML = '';
   }
 
@@ -389,7 +390,7 @@
   $('memoEmptyLbl').onclick = () => { F.memoEmpty = !F.memoEmpty; changed(); };
   $('moreBtn').onclick = () => { detailOpen = !detailOpen; renderSearch(); };
   // 検索窓の「クリア」は入力だけを空にする。「絞り込み中」の✕と「条件をすべてクリア」は、その場で結果も更新する
-  $('clearBtn').onclick = () => { Object.assign(F, EMPTY()); $('kwIn').value = ''; changed(); };
+  $('clearBtn').onclick = () => { if ($('clearBtn').classList.contains('dis')) return; Object.assign(F, EMPTY()); $('kwIn').value = ''; changed(); };
   $('applied').addEventListener('click', (e) => {
     if (e.target.id === 'clearAll') { Object.assign(F, EMPTY()); Object.assign(A, EMPTY()); $('kwIn').value = ''; refresh(); return; }
     const k = e.target.dataset.k;
