@@ -453,7 +453,7 @@
   $('demoDl').onchange = renderAlerts;
 
   // ---------- コース・日程枠モーダル ----------
-  const M = { season: 'IS', tab: 'all', q: '', years: [], ended: false, more: false, focus: null, showPast: false, jobs: new Set(), slots: new Set() };
+  const M = { fs: null, q: '', more: false, focus: null, showPast: false, jobs: new Set(), slots: new Set() };
   const appsOfJob = (jid) => APPS.filter((a) => a.job === jid);
   const hasApps = (jid) => APPS.some((a) => a.job === jid);
   const allSlotKeys = (jid) => ['none', ...SLOTS[jid].map((x) => x.id)].map((sid) => `${jid}:${sid}`);
@@ -479,37 +479,42 @@
     else { M.jobs.add(jid); }
     if (SLOTS[jid]) clearSlots(jid);
   };
-  function visibleJobs(ignoreTab) {
-    return JOBS.filter((j) => hasApps(j.id) && (M.season === 'all' || j.season === M.season)
-      && (ignoreTab || M.tab === 'all' || j.type === M.tab)
-      && (M.ended || j.posted)
-      && (!M.years.length || j.years.some((y) => M.years.includes(y)))
+  // 求人の絞り込み：行ごとにチェックの付いた値だけを出す。各行とも最後の1つは外せない
+  const FROWS = [
+    ['season', '求人の時期', () => [['IS', 'IS期の求人'], ['main', '就活期の求人']], false],
+    ['type', '求人の種類', () => [['course', 'コース'], ['seminar', '説明会'], ['entry', '企業エントリー']], false],
+    ['year', '求人の対象卒年', () => MD_YEARS.map((y) => [y, `${y}卒`]), true],
+    ['post', '掲載状況', () => [['on', '掲載中'], ['off', '掲載終了・未掲載']], true],
+  ];
+  const defaultFs = () => ({ season: new Set(['IS', 'main']), type: new Set(['course', 'seminar', 'entry']), year: new Set(MD_YEARS), post: new Set(['on']) });
+  function visibleJobs() {
+    const fs = M.fs;
+    return JOBS.filter((j) => hasApps(j.id) && fs.season.has(j.season) && fs.type.has(j.type)
+      && j.years.some((y) => fs.year.has(y)) && fs.post.has(j.posted ? 'on' : 'off')
       && (!M.q || j.name.includes(M.q) || j.id.includes(M.q)))
       .sort((a, b) => b.created.localeCompare(a.created));
   }
   function openModal() {
-    Object.assign(M, { season: 'all', tab: 'all', q: '', years: [], ended: false, more: false, focus: null, showPast: false, jobs: new Set(F.jobs), slots: new Set(F.slots) });
+    Object.assign(M, { fs: defaultFs(), q: '', more: false, focus: null, showPast: false, jobs: new Set(F.jobs), slots: new Set(F.slots) });
     $('mdQ').value = '';
     $('ov').classList.add('open'); $('md').classList.add('open');
     renderModal();
   }
   function closeModal() { $('ov').classList.remove('open'); $('md').classList.remove('open'); }
   function renderModal() {
-    const isIS = M.season === 'IS';
+    const fs = M.fs;
+    const isIS = !fs.season.has('main');
     $('mdDesc').textContent = isIS
       ? '求人名の一部を入れて探し、絞り込みたい求人にチェックを付けてください。'
       : '求人名の一部を入れて探し、絞り込みたい求人にチェックを付けてください。説明会は「日程を選ぶ」で日程ごとにも選べます。';
-    $('moreRow').classList.toggle('open', M.more);
-    $('moreLk').textContent = M.more ? 'もっと絞る ▲' : `もっと絞る${(M.tab !== 'all' || M.years.length || M.ended) ? '（指定中）' : ''} ▼`;
-    const cnt = (s) => JOBS.filter((j) => hasApps(j.id) && (s === 'all' || j.season === s) && (M.ended || j.posted)).length;
-    $('kseg').innerHTML = [['IS', 'IS期の求人'], ['main', '就活期の求人'], ['all', 'すべて']].map(([k, t]) => `<span class="${M.season === k ? 'on' : ''}" data-s="${k}">${t}<b>${cnt(k)}</b></span>`).join('');
-    $('endedBox').classList.toggle('on', M.ended);
-    $('mdYearVal').innerHTML = M.years.length ? `対象卒年：<b>${M.years.map((y) => y + '卒').join('、')}</b>` : '対象卒年：すべて';
-    const base = visibleJobs(true);
-    const tabs = [['all', 'すべて'], ['course', 'コース求人'], ['seminar', '説明会日程求人'], ['entry', '企業エントリー求人']].filter(([k]) => !(isIS && k === 'seminar'));
-    if (isIS && M.tab === 'seminar') M.tab = 'all';
-    $('mdType').innerHTML = tabs.map(([k, t]) => `<option value="${k}" ${M.tab === k ? 'selected' : ''}>求人の種類：${t}（${k === 'all' ? base.length : base.filter((j) => j.type === k).length}）</option>`).join('');
-    const jobs = visibleJobs(false);
+    const d = defaultFs();
+    const moreSet = fs.year.size !== d.year.size || fs.post.size !== 1 || !fs.post.has('on');
+    $('moreLk').textContent = M.more ? 'もっと絞る ▲' : `もっと絞る${moreSet ? '（指定中）' : ''} ▼`;
+    $('frows').innerHTML = FROWS.filter((r) => !r[3] || M.more).map(([f, label, opts]) => `<div class="frow"><span class="fl">${label}</span>${opts().map(([v, t]) => {
+      const dis = f === 'type' && v === 'seminar' && isIS;
+      return `<label class="cb ${dis ? 'dis' : ''}" data-f="${f}" data-v="${v}"><span class="box ${fs[f].has(v) && !dis ? 'on' : ''}"></span>${t}</label>`;
+    }).join('')}</div>`).join('');
+    const jobs = visibleJobs();
     if (M.focus && !jobs.some((j) => j.id === M.focus)) M.focus = null;
     $('jobList').innerHTML = jobs.length ? jobs.map((j) => {
       const [tl] = TYPE_LABEL[j.type];
@@ -553,29 +558,21 @@
   $('mdCancel').onclick = closeModal;
   $('ov').onclick = closeModal;
   $('mdApply').onclick = () => { F.jobs = [...M.jobs]; F.slots = [...M.slots]; closeModal(); changed(); };
-  $('kseg').onclick = (e) => { const s = e.target.closest('[data-s]'); if (s) { M.season = s.dataset.s; M.focus = null; renderModal(); } };
-  $('mdType').onchange = (e) => { M.tab = e.target.value; renderModal(); };
   $('moreLk').onclick = () => { M.more = !M.more; renderModal(); };
   $('mdQ').oninput = () => { M.q = $('mdQ').value.trim(); renderModal(); };
   const MD_YEARS = [...new Set(JOBS.flatMap((j) => j.years))].sort();
-  const drawMdYear = () => {
-    $('mdYearDD').innerHTML = `<div class="dh">対象卒年（複数選べます）</div>${MD_YEARS.map((y) => `<label data-y="${y}"><span class="box ${M.years.includes(y) ? 'on' : ''}"></span>${y}卒</label>`).join('')}<div class="df"><span data-a="clear">すべて解除</span><span class="ok" data-a="ok">閉じる</span></div>`;
+  $('frows').onclick = (e) => {
+    const l = e.target.closest('[data-f]');
+    if (!l || l.classList.contains('dis')) return;
+    e.preventDefault();
+    const set = M.fs[l.dataset.f]; const v = l.dataset.v;
+    if (set.has(v)) {
+      if (set.size === 1) { toast('最後の1つは外せません'); return; }
+      set.delete(v);
+    } else set.add(v);
+    M.focus = null;
+    renderModal();
   };
-  $('mdYearBtn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    const dd = $('mdYearDD');
-    if (dd.classList.contains('open')) { dd.classList.remove('open'); return; }
-    closeDDs(dd); drawMdYear(); dd.classList.add('open');
-  });
-  $('mdYearDD').addEventListener('click', (e) => {
-    e.stopPropagation();
-    const l = e.target.closest('[data-y]'); const a = e.target.closest('[data-a]');
-    if (l) { const y = l.dataset.y; M.years = M.years.includes(y) ? M.years.filter((x) => x !== y) : MD_YEARS.filter((x) => x === y || M.years.includes(x)); }
-    if (a && a.dataset.a === 'clear') M.years = [];
-    if (a && a.dataset.a === 'ok') { $('mdYearDD').classList.remove('open'); return; }
-    drawMdYear(); renderModal();
-  });
-  $('endedLbl').onclick = () => { M.ended = !M.ended; renderModal(); };
   $('jobList').onclick = (e) => {
     const s = e.target.closest('[data-slot]');
     if (s) { toggleSlot(s.dataset.slot); renderModal(); return; }
@@ -837,10 +834,10 @@
   }
   if (location.hash === '#hist') openHist();
   if (location.hash === '#modal-init') openModal();
-  if (location.hash === '#modal-is') { openModal(); M.season = 'IS'; renderModal(); }
+  if (location.hash === '#modal-is') { openModal(); M.fs.season = new Set(['IS']); renderModal(); }
   if (location.hash === '#modal') {
     openModal();
-    if (location.hash === '#modal') { M.season = 'main'; M.focus = '1234570'; M.jobs.add('1234567'); M.slots.add('1234570:none'); renderModal(); }
+    if (location.hash === '#modal') { M.fs.season = new Set(['main']); M.focus = '1234570'; M.jobs.add('1234567'); M.slots.add('1234570:none'); renderModal(); }
   }
   if (location.hash === '#modal-all') { openModal(); toggleJob('1234570'); renderModal(); }
   if (location.hash === '#open' || location.hash === '#cal') { detailOpen = true; renderSearch(); }

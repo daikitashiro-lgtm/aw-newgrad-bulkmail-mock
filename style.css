@@ -346,8 +346,15 @@ body.dirty table, body.dirty .pager, body.dirty .pinfo, body.dirty .empty { opac
 .srch.big { height: 44px; border-color: #1FA9E1; }
 .srch.big input { font-size: 14px; }
 .morelk { color: #1FA9E1; font-size: 13px; cursor: pointer; white-space: nowrap; }
-.moreRow { display: none; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: -2px 0 12px; }
-.moreRow.open { display: flex; }
+.fbox { position: relative; border: 1px solid #E3E3E3; background: #FAFAFA; border-radius: 4px; padding: 6px 40px 6px 12px; margin: 0 0 12px; }
+.frow { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 18px; padding: 5px 0; font-size: 13px; }
+.frow + .frow { border-top: 1px dashed #E3E3E3; }
+.frow .fl { width: 92px; color: #777; font-size: 12px; font-weight: 700; }
+.frow .cb { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.frow .cb.dis { opacity: .35; cursor: default; }
+.fbox .ftip { position: absolute; right: 12px; top: 9px; margin: 0; }
+.fbox .ftip .qbox { left: auto; right: -10px; }
+.fbox .ftip .qbox::after { left: auto; right: 14px; }
 .mtabs { display: none !important; }
 .slotlk { font-size: 12px; padding: 3px 12px; cursor: pointer; }
 .slotlk.on { background: #1FA9E1; color: #fff; border-color: #1FA9E1; }
