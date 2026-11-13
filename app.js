@@ -195,7 +195,7 @@
 
   function renderApplied() {
     const tags = [];
-    if (A.years.length) tags.push(['years', `卒年度：${A.years.map(yearText).join('、')}`]);
+    if (A.years.length) tags.push(['years', `応募者の卒年度：${A.years.map(yearText).join('、')}`]);
     A.jobs.forEach((j) => tags.push([`job:${j}`, jobLabel(j)]));
     A.slots.forEach((s) => { const [jid, sid] = s.split(':'); tags.push([`slot:${s}`, `${jobById(jid).name}：${slotLabel(jid, sid)}`]); });
     if (A.kw) tags.push(['kw', `フリーワード：${A.kw}`]);
@@ -315,7 +315,7 @@
   }
   document.addEventListener('click', () => closeDDs());
 
-  multiDD('yearBtn', 'yearDD', '学生の卒年度（複数選べます）', [...YEARS, 'other'].map((y) => ({ v: y, t: yearText(y) })), () => F.years, (v) => { F.years = v; });
+  multiDD('yearBtn', 'yearDD', '応募者の卒年度（学歴に登録された卒業年度で絞ります。複数選べます）', [...YEARS, 'other'].map((y) => ({ v: y, t: yearText(y) })), () => F.years, (v) => { F.years = v; });
   // ---------- 応募日カレンダー（期間指定） ----------
   const TODAY = new Date(2026, 10, 11);
   const cal = { y: 2026, m: 10, from: null, to: null };
