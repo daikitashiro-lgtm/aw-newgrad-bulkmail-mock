@@ -506,7 +506,7 @@
       : '求人名の一部を入れて探し、絞り込みたい求人にチェックを付けてください。説明会は「日程枠を選ぶ」で日程枠ごとにも選べます。';
     const d = defaultFs();
     const moreSet = fs.year.size !== d.year.size || fs.post.size !== 1 || !fs.post.has('on');
-    $('moreLk').textContent = M.more ? 'もっと絞る ▲' : `もっと絞る${moreSet ? '（指定中）' : ''} ▼`;
+    $('moreLk').textContent = M.more ? '∧ もっと絞るを閉じる' : `∨ もっと絞る${moreSet ? '（指定中）' : ''}`;
     $('frows').innerHTML = FROWS.filter((r) => !r[3] || M.more).map(([f, label, opts]) => `<div class="frow"><span class="fl">${label}</span>${opts().map(([v, t]) => {
       const dis = f === 'type' && v === 'seminar' && isIS;
       return `<label class="cb ${dis ? 'dis' : ''}" data-f="${f}" data-v="${v}"><span class="box ${fs[f].has(v) && !dis ? 'on' : ''}"></span>${t}</label>`;

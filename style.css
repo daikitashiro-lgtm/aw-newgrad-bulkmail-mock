@@ -356,6 +356,9 @@ body.dirty table, body.dirty .pager, body.dirty .pinfo, body.dirty .empty { opac
 .frow .cb { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
 .frow .cb.dis { opacity: .35; cursor: default; }
 .fbox .ftip { position: absolute; right: 12px; top: 9px; margin: 0; }
+.mtop { width: 560px; margin: 0 auto; }
+.mtop .desc { text-align: center; margin-left: -56px; margin-right: -56px; }
+.fbox .morelk { display: inline-block; font-size: 12px; padding: 6px 0 3px; border-top: 1px dashed #E3E3E3; width: 100%; }
 .fbox .ftip .qbox { left: auto; right: -10px; }
 .fbox .ftip .qbox::after { left: auto; right: 14px; }
 .mtabs { display: none !important; }
