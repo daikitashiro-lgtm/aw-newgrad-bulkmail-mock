@@ -186,7 +186,7 @@
     $('courseVal').innerHTML = cs ? `<span class="on-v">${esc(cs)}</span>` : 'すべて';
     $('memoEmptyBox').classList.toggle('on', F.memoEmpty);
     const detailCount = [F.date, F.statuses.length, F.notice].filter(Boolean).length;
-    $('moreBtn').textContent = detailOpen ? '詳しい条件 ▲' : `詳しい条件${detailCount ? `（${detailCount}件指定中）` : ''} ▼`;
+    $('moreBtn').textContent = detailOpen ? '∧ 詳しい条件を閉じる' : `∨ 詳しい条件を表示する${detailCount ? `（${detailCount}件指定中）` : ''}`;
     $('detail').classList.toggle('open', detailOpen);
     const chip = (btn, val, on, text) => { $(btn).classList.toggle('on', on); $(val).textContent = text; };
     chip('dateBtn', 'dateVal', !!F.date, F.date ? dateText(F.date) : '指定なし');

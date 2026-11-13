@@ -392,3 +392,21 @@ body.dirty table, body.dirty .pager, body.dirty .pinfo, body.dirty .empty { opac
 .when2 { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; padding: 10px 14px; background: #FAFAFA; border-radius: 4px; }
 .when2 .lb3 { font-size: 13px; color: #555; margin-right: 6px; }
 .when2 input, .when2 select { height: 34px; border: 1px solid #C9C9C9; border-radius: 3px; padding: 0 8px; font-size: 13px; font-family: inherit; background: #fff; }
+
+/* 検索欄（有料広告の求人選択と同じ形：項目名を欄の上に出し、中央に寄せる） */
+.search.sv3 { padding: 18px 16px 16px; }
+.sv3 .scol { width: 900px; margin: 0 auto; }
+.sv3 .r1 { display: flex; gap: 12px; align-items: flex-end; }
+.sv3 .f { display: flex; flex-direction: column; gap: 6px; }
+.sv3 .f > .t { font-size: 12px; color: #555; display: flex; align-items: center; height: 18px; }
+.sv3 .f > .t .qtip { margin-left: 4px; vertical-align: 0; }
+.sv3 .pick, .sv3 .sel, .sv3 .chip { height: 40px; box-sizing: border-box; font-size: 13px; }
+.sv3 .pick .go { margin-left: auto; padding-left: 10px; }
+.sv3 .fw { width: 486px; max-width: none; flex: none; height: 40px; box-sizing: border-box; }
+.sv3 .r2 { display: flex; align-items: center; gap: 18px; margin-top: 14px; }
+.sv3 .r2 .cb { margin: 0; font-size: 12px; }
+.sv3 .more { margin-left: 0; font-size: 12px; }
+.sv3 .sp { flex: 1; }
+.sv3 .clear { color: #1FA9E1; font-size: 12px; padding: 0; }
+.sv3 #searchBtn { height: 44px; padding: 0 34px; font-size: 15px; font-weight: 700; }
+.sv3 .detail { gap: 12px; }

@@ -21,25 +21,28 @@
     <div class="tabs"><span class="on">応募者一覧</span><span>説明会求人一覧</span></div>
 
     <div class="stick" id="stick">
-    <div class="search">
-      <div class="row">
-        <div class="pick" id="courseBtn"><span class="lb">コース・日程枠</span><span id="courseVal">すべて</span><span class="go">選ぶ ›</span></div>
-        <div class="ddwrap">
-          <div class="sel" id="yearBtn" style="width:200px"><span class="lb">応募者の卒年度</span><span id="yearVal">すべて</span><span class="cv">▼</span></div>
+    <div class="search sv3"><div class="scol">
+      <div class="r1">
+        <div class="f"><span class="t">コース・日程枠</span><div class="pick" id="courseBtn" style="width:220px"><span id="courseVal">すべて</span><span class="go">選ぶ ›</span></div></div>
+        <div class="f"><span class="t">応募者の卒年度</span><div class="ddwrap">
+          <div class="sel" id="yearBtn" style="width:170px"><span id="yearVal">すべて</span><span class="cv">▼</span></div>
           <div class="dd" id="yearDD"></div>
-        </div>
-        <label class="fw"><span class="k">フリーワード</span><span class="qtip down click" id="kwTip">?<span class="qbox">メモ・応募者名・求人・勤務地から探します。<br>・スペースで区切ると、すべての言葉を含む応募に絞ります。<br>・言葉の前に「-」を付けると、その言葉を含まない応募に絞ります。<br>例：IS参加済み　大阪　-辞退</span></span><input id="kwIn" placeholder="メモ・応募者名・求人で探す"></label>
+        </div></div>
+        <div class="f"><span class="t">フリーワード<span class="qtip down click" id="kwTip">?<span class="qbox">メモ・応募者名・求人・勤務地から探します。<br>・スペースで区切ると、すべての言葉を含む応募に絞ります。<br>・言葉の前に「-」を付けると、その言葉を含まない応募に絞ります。<br>例：IS参加済み　大阪　-辞退</span></span></span><label class="fw"><input id="kwIn" placeholder="メモ、応募者名、求人名、勤務地（スペース区切りで複数入力可）"></label></div>
+      </div>
+      <div class="r2">
         <label class="cb" id="memoEmptyLbl"><span class="box" id="memoEmptyBox"></span>メモ未記入の人のみ</label>
+        <span class="more" id="moreBtn">∨ 詳しい条件を表示する</span>
+        <span class="sp"></span>
+        <span class="clear" id="clearBtn">検索条件をクリアする</span>
         <div class="btn" id="searchBtn">検索</div>
-        <span class="clear" id="clearBtn">クリア</span>
-        <span class="more" id="moreBtn">詳しい条件 ▼</span>
       </div>
       <div class="detail" id="detail">
-        <div class="ddwrap"><div class="chip" id="dateBtn"><span class="k">応募日</span><span class="v" id="dateVal">指定なし</span><span class="cv calic">▦</span></div><div class="dd" id="dateDD"></div></div>
-        <div class="ddwrap"><div class="chip" id="statusBtn"><span class="k">対応状況</span><span class="v" id="statusVal">すべて</span><span class="cv">▼</span></div><div class="dd" id="statusDD"></div></div>
-        <div class="ddwrap"><div class="chip" id="noticeBtn"><span class="k">お知らせ</span><span class="v" id="noticeVal">新着／面接すべて</span><span class="cv">▼</span></div><div class="dd" id="noticeDD"></div></div>
+        <div class="f"><span class="t">応募日</span><div class="ddwrap"><div class="chip" id="dateBtn" style="width:200px"><span class="v" id="dateVal">指定なし</span><span class="cv calic">▦</span></div><div class="dd" id="dateDD"></div></div></div>
+        <div class="f"><span class="t">対応状況</span><div class="ddwrap"><div class="chip" id="statusBtn" style="width:170px"><span class="v" id="statusVal">すべて</span><span class="cv">▼</span></div><div class="dd" id="statusDD"></div></div></div>
+        <div class="f"><span class="t">お知らせ</span><div class="ddwrap"><div class="chip" id="noticeBtn" style="width:200px"><span class="v" id="noticeVal">新着／面接すべて</span><span class="cv">▼</span></div><div class="dd" id="noticeDD"></div></div></div>
       </div>
-    </div>
+    </div></div>
 
     <div class="applied" id="applied"></div>
 
