@@ -417,3 +417,5 @@ body.dirty table, body.dirty .pager, body.dirty .pinfo, body.dirty .empty { opac
 .sv3 #searchBtn { height: 44px; padding: 0 34px; font-size: 15px; font-weight: 700; }
 .sv3 .detail { gap: 12px; }
 .sv3 .dd:not(#dateDD) { min-width: 0; width: 100%; box-sizing: border-box; }
+#kwTip .qbox { width: auto; white-space: nowrap; padding: 4px 12px; font-size: 12px; left: calc(100% + 10px); top: -7px; bottom: auto; }
+#kwTip .qbox::after { left: auto; right: 100%; top: 50%; margin-top: -7px; border-top-color: transparent; border-right-color: #2B3238; }
