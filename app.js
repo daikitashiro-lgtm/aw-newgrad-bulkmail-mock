@@ -825,6 +825,12 @@
     if (errs.length) $('xBody').scrollTop = $('xBody').scrollHeight;
   };
 
+  const qs = new URLSearchParams(location.search);
+  [['mail', 'demoMail'], ['dl', 'demoDl']].forEach(([k, id]) => {
+    const v = qs.get(k);
+    if (v && [...$(id).options].some((o) => o.value === v)) $(id).value = v;
+  });
+  MI.nRsv = $('demoMail').value === 'rsv2' ? 2 : 1;
   search();
   if (location.hash.startsWith('#mail')) {
     selected = new Set(results.slice(0, 4).map((a) => a.id)); renderTable(); renderBar(); openMail();
