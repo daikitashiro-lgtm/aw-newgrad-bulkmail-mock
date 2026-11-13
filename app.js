@@ -536,7 +536,7 @@
     const apps = appsOfJob(j.id);
     const jobOn = M.jobs.has(j.id);
     const row = (sid, t1, t2, rr, cls = '') => { const key = `${j.id}:${sid}`; const on = jobOn || M.slots.has(key); return `<div class="slr ${on ? 'on' : ''} ${cls}" data-slot="${key}"><span class="box ${on ? 'on' : ''}"></span><div class="main"><div>${t1}</div><div class="t2">${t2}</div></div><div class="r">${rr}</div></div>`; };
-    let html = row('none', '日程なし', '応募したが、まだ日程を予約していない人', '');
+    let html = row('none', '日程なし', '開催日・場所は未定', '');
     let mon = '';
     const list = M.showPast ? past.concat(up) : up;
     list.forEach((s) => {
