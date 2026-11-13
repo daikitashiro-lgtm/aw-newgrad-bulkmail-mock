@@ -486,7 +486,7 @@
     ['year', '求人の対象卒年', () => MD_YEARS.map((y) => [y, `${y}卒`]), true],
     ['post', '掲載状況', () => [['on', '掲載中'], ['off', '掲載終了・未掲載']], true],
   ];
-  const defaultFs = () => ({ season: new Set(['IS', 'main']), type: new Set(['course', 'seminar', 'entry']), year: new Set(MD_YEARS), post: new Set(['on']) });
+  const defaultFs = () => ({ season: new Set(['main']), type: new Set(['course', 'seminar', 'entry']), year: new Set(MD_YEARS), post: new Set(['on']) });
   function visibleJobs() {
     const fs = M.fs;
     return JOBS.filter((j) => hasApps(j.id) && fs.season.has(j.season) && fs.type.has(j.type)
