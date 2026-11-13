@@ -161,7 +161,7 @@
     const d = isDirty();
     $('searchBtn').classList.toggle('hot', d);
     document.body.classList.toggle('dirty', d);
-    $('clearBtn').classList.toggle('dis', condKey({ ...F, kw: $('kwIn').value.trim() }) === condKey(EMPTY()));
+    $('clearBtn').classList.toggle('dis', condKey({ ...F, kw: $('kwIn').value.trim() }) === condKey(EMPTY()) && condKey(A) === condKey(EMPTY()));
     $('pend').innerHTML = '';
   }
 
@@ -206,7 +206,7 @@
     if (A.statuses.length) tags.push(['statuses', `対応状況：${A.statuses.join('、')}`]);
     if (A.notice) tags.push(['notice', `お知らせ：${A.notice}`]);
     $('applied').innerHTML = tags.length
-      ? `<span class="t">絞り込み中</span>${tags.map(([k, t]) => `<span class="tag">${esc(t)}<span class="x" data-k="${esc(k)}">✕</span></span>`).join('')}<span class="all" id="clearAll">条件をすべてクリア</span>`
+      ? `<span class="t">絞り込み中</span>${tags.map(([k, t]) => `<span class="tag">${esc(t)}<span class="x" data-k="${esc(k)}">✕</span></span>`).join('')}`
       : '';
   }
 
@@ -390,9 +390,8 @@
   $('memoEmptyLbl').onclick = () => { F.memoEmpty = !F.memoEmpty; changed(); };
   $('moreBtn').onclick = () => { detailOpen = !detailOpen; renderSearch(); };
   // 検索窓の「クリア」は入力だけを空にする。「絞り込み中」の✕と「条件をすべてクリア」は、その場で結果も更新する
-  $('clearBtn').onclick = () => { if ($('clearBtn').classList.contains('dis')) return; Object.assign(F, EMPTY()); $('kwIn').value = ''; changed(); };
+  $('clearBtn').onclick = () => { if ($('clearBtn').classList.contains('dis')) return; Object.assign(F, EMPTY()); Object.assign(A, EMPTY()); $('kwIn').value = ''; refresh(); };
   $('applied').addEventListener('click', (e) => {
-    if (e.target.id === 'clearAll') { Object.assign(F, EMPTY()); Object.assign(A, EMPTY()); $('kwIn').value = ''; refresh(); return; }
     const k = e.target.dataset.k;
     if (!k) return;
     [F, A].forEach((o) => {
