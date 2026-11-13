@@ -288,7 +288,7 @@
 
   // ---------- ドロップダウン ----------
   function closeDDs(except) { document.querySelectorAll('.dd.open').forEach((d) => { if (d !== except) d.classList.remove('open'); }); }
-  function multiDD(btnId, ddId, title, options, getSel, setSel, noClear = false) {
+  function multiDD(btnId, ddId, title, options, getSel, setSel, instant = false) {
     $(btnId).addEventListener('click', (e) => {
       e.stopPropagation();
       const dd = $(ddId);
@@ -296,14 +296,14 @@
       closeDDs(dd);
       const tmp = new Set(getSel());
       const draw = () => {
-        dd.innerHTML = `<div class="dh">${title}</div>${options.map((o) => `<label data-v="${esc(o.v)}"><span class="box ${tmp.has(o.v) ? 'on' : ''}"></span>${esc(o.t)}</label>`).join('')}<div class="df">${noClear ? '<span></span>' : '<span data-a="clear">すべて解除</span>'}<span class="ok" data-a="ok">決定</span></div>`;
+        dd.innerHTML = `<div class="dh">${title}</div>${options.map((o) => `<label data-v="${esc(o.v)}"><span class="box ${tmp.has(o.v) ? 'on' : ''}"></span>${esc(o.t)}</label>`).join('')}${instant ? '' : '<div class="df"><span data-a="clear">すべて解除</span><span class="ok" data-a="ok">決定</span></div>'}`;
       };
       draw();
       dd.onclick = (ev) => {
         ev.stopPropagation();
         const l = ev.target.closest('label');
         const a = ev.target.closest('[data-a]');
-        if (l) { const v = l.dataset.v; tmp.has(v) ? tmp.delete(v) : tmp.add(v); draw(); }
+        if (l) { const v = l.dataset.v; tmp.has(v) ? tmp.delete(v) : tmp.add(v); draw(); if (instant) { setSel(options.map((o) => o.v).filter((x) => tmp.has(x))); changed(); } }
         if (a && a.dataset.a === 'clear') { tmp.clear(); draw(); }
         if (a && a.dataset.a === 'ok') { setSel(options.map((o) => o.v).filter((v) => tmp.has(v))); dd.classList.remove('open'); changed(); }
       };
