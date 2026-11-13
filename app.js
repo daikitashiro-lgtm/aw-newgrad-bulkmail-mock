@@ -156,18 +156,19 @@
     Object.assign(A, copyCond(F));
     refresh(keepSelection);
   }
-  function changed() { renderSearch(); renderPending(); }
+  function changed() { renderSearch(); renderPending(); renderBar(); }
   function renderPending() {
     const d = isDirty();
     $('searchBtn').classList.toggle('hot', d);
-    $('pend').innerHTML = d ? '<span class="ic">!</span>条件が変わっています。「検索」を押すと結果に反映します' : '';
+    document.body.classList.toggle('dirty', d);
+    $('pend').innerHTML = '';
   }
 
   // ---------- 表示 ----------
   const ymd = (d) => `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
   const dateText = (r) => (r.to && r.to.getTime() !== r.from.getTime() ? `${ymd(r.from)}〜${ymd(r.to)}` : ymd(r.from));
-  const jobLabel = (jid) => { const j = jobById(jid); return j.type === 'seminar' ? `${j.name}：全日程（${SLOTS[jid].length}枠・未予約を含む）` : j.name; };
-  const slotLabel = (jid, sid) => (sid === 'none' ? '未予約' : SLOTS[jid].find((s) => s.id === sid).label);
+  const jobLabel = (jid) => { const j = jobById(jid); return j.type === 'seminar' ? `${j.name}：全日程（${SLOTS[jid].length}件・日程なしを含む）` : j.name; };
+  const slotLabel = (jid, sid) => (sid === 'none' ? '日程なし' : SLOTS[jid].find((s) => s.id === sid).label);
   function courseSummary() {
     const nj = F.jobs.length;
     const ns = F.slots.length;
@@ -199,7 +200,7 @@
     A.jobs.forEach((j) => tags.push([`job:${j}`, jobLabel(j)]));
     A.slots.forEach((s) => { const [jid, sid] = s.split(':'); tags.push([`slot:${s}`, `${jobById(jid).name}：${slotLabel(jid, sid)}`]); });
     if (A.kw) tags.push(['kw', `フリーワード：${A.kw}`]);
-    if (A.memoEmpty) tags.push(['memoEmpty', 'メモが空の人だけ']);
+    if (A.memoEmpty) tags.push(['memoEmpty', 'メモ未記入の人のみ']);
     if (A.date) tags.push(['date', `応募日：${dateText(A.date)}`]);
     if (A.statuses.length) tags.push(['statuses', `対応状況：${A.statuses.join('、')}`]);
     if (A.notice) tags.push(['notice', `お知らせ：${A.notice}`]);
@@ -237,6 +238,12 @@
   }
 
   function renderBar() {
+    if (isDirty()) {
+      $('headBox').classList.remove('on');
+      $('bar2').className = 'bar2 dirtyb';
+      $('bar2').innerHTML = '<span class="dmsg"><span class="ic">!</span>条件が変わっています。「検索」を押すと一覧が新しくなります。それまでは、応募の選択とメールの送信はできません。</span><span class="btn dsb" id="doSearch">検索する</span>';
+      return;
+    }
     const rows = pageRows();
     const total = results.length;
     const pageN = rows.length;
@@ -378,7 +385,7 @@
   // ---------- 検索欄 ----------
   $('searchBtn').onclick = () => search();
   $('kwIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') search(); });
-  $('kwIn').addEventListener('input', renderPending);
+  $('kwIn').addEventListener('input', () => { renderPending(); renderBar(); });
   $('memoEmptyLbl').onclick = () => { F.memoEmpty = !F.memoEmpty; changed(); };
   $('moreBtn').onclick = () => { detailOpen = !detailOpen; renderSearch(); };
   // 検索窓の「クリア」は入力だけを空にする。「絞り込み中」の✕と「条件をすべてクリア」は、その場で結果も更新する
@@ -428,6 +435,9 @@
     } else if (t.id === 'sendBtn') {
       if (selected.size) openMail();
       return;
+    } else if (t.id === 'doSearch') {
+      search();
+      return;
     } else return;
     renderTable(); renderBar();
   });
@@ -443,7 +453,7 @@
   $('demoDl').onchange = renderAlerts;
 
   // ---------- コース・日程枠モーダル ----------
-  const M = { season: 'IS', tab: 'all', q: '', years: [], ended: false, focus: null, showPast: false, jobs: new Set(), slots: new Set() };
+  const M = { season: 'IS', tab: 'all', q: '', years: [], ended: false, more: false, focus: null, showPast: false, jobs: new Set(), slots: new Set() };
   const appsOfJob = (jid) => APPS.filter((a) => a.job === jid);
   const hasApps = (jid) => APPS.some((a) => a.job === jid);
   const allSlotKeys = (jid) => ['none', ...SLOTS[jid].map((x) => x.id)].map((sid) => `${jid}:${sid}`);
@@ -467,7 +477,7 @@
   const toggleJob = (jid) => {
     if (M.jobs.has(jid)) M.jobs.delete(jid);
     else { M.jobs.add(jid); }
-    if (SLOTS[jid]) { clearSlots(jid); M.focus = jid; }
+    if (SLOTS[jid]) clearSlots(jid);
   };
   function visibleJobs(ignoreTab) {
     return JOBS.filter((j) => hasApps(j.id) && (M.season === 'all' || j.season === M.season)
@@ -478,7 +488,7 @@
       .sort((a, b) => b.created.localeCompare(a.created));
   }
   function openModal() {
-    Object.assign(M, { season: 'all', tab: 'all', q: '', years: [], ended: false, focus: null, showPast: false, jobs: new Set(F.jobs), slots: new Set(F.slots) });
+    Object.assign(M, { season: 'all', tab: 'all', q: '', years: [], ended: false, more: false, focus: null, showPast: false, jobs: new Set(F.jobs), slots: new Set(F.slots) });
     $('mdQ').value = '';
     $('ov').classList.add('open'); $('md').classList.add('open');
     renderModal();
@@ -487,8 +497,10 @@
   function renderModal() {
     const isIS = M.season === 'IS';
     $('mdDesc').textContent = isIS
-      ? '絞り込みたい求人を選んでください。'
-      : '絞り込みたい求人を選んでください。説明会日程求人は「日程枠 ›」を押すと、日程枠や「未予約」まで選べます（任意）。';
+      ? '求人名の一部を入れて探し、絞り込みたい求人にチェックを付けてください。'
+      : '求人名の一部を入れて探し、絞り込みたい求人にチェックを付けてください。説明会は「日程を選ぶ」で日程ごとにも選べます。';
+    $('moreRow').classList.toggle('open', M.more);
+    $('moreLk').textContent = M.more ? 'もっと絞る ▲' : `もっと絞る${(M.tab !== 'all' || M.years.length || M.ended) ? '（指定中）' : ''} ▼`;
     const cnt = (s) => JOBS.filter((j) => hasApps(j.id) && (s === 'all' || j.season === s) && (M.ended || j.posted)).length;
     $('kseg').innerHTML = [['IS', 'IS期の求人'], ['main', '就活期の求人'], ['all', 'すべて']].map(([k, t]) => `<span class="${M.season === k ? 'on' : ''}" data-s="${k}">${t}<b>${cnt(k)}</b></span>`).join('');
     $('endedBox').classList.toggle('on', M.ended);
@@ -496,39 +508,33 @@
     const base = visibleJobs(true);
     const tabs = [['all', 'すべて'], ['course', 'コース求人'], ['seminar', '説明会日程求人'], ['entry', '企業エントリー求人']].filter(([k]) => !(isIS && k === 'seminar'));
     if (isIS && M.tab === 'seminar') M.tab = 'all';
-    $('mtabs').innerHTML = tabs.map(([k, t]) => `<span class="${M.tab === k ? 'on' : ''}" data-t="${k}">${t}<b>${k === 'all' ? base.length : base.filter((j) => j.type === k).length}</b></span>`).join('');
+    $('mdType').innerHTML = tabs.map(([k, t]) => `<option value="${k}" ${M.tab === k ? 'selected' : ''}>求人の種類：${t}（${k === 'all' ? base.length : base.filter((j) => j.type === k).length}）</option>`).join('');
     const jobs = visibleJobs(false);
     if (M.focus && !jobs.some((j) => j.id === M.focus)) M.focus = null;
     $('jobList').innerHTML = jobs.length ? jobs.map((j) => {
-      const [tl, tc] = TYPE_LABEL[j.type];
+      const [tl] = TYPE_LABEL[j.type];
       const on = M.jobs.has(j.id);
       const ns = [...M.slots].filter((s) => s.startsWith(j.id + ':')).length;
-      return `<div class="it ${on ? 'sel1' : ''} ${M.focus === j.id ? 'focus' : ''} ${j.posted ? '' : 'ended'}" data-j="${j.id}">
-        <span class="box ${on ? 'on' : ''}" data-check="${j.id}"></span>
-        <div class="main"><div class="jchips">${j.season === 'IS' ? '<span class="jchip">インターンシップ&amp;キャリア</span>' : j.years.map((y) => `<span class="jchip">正社員 - 新卒${y}卒</span>`).join('')}<span class="jchip">${tl}</span></div><div class="t1">${esc(j.name)}${on && j.type === 'seminar' ? '<span class="picked">全日程を選択中</span>' : ns ? `<span class="picked">${ns}枠を選択中</span>` : ''}</div>
+      const open = M.focus === j.id;
+      return `<div class="it ${on || ns ? 'sel1' : ''} ${j.posted ? '' : 'ended'}" data-j="${j.id}">
+        <span class="box ${on ? 'on' : ns ? 'part' : ''}" data-check="${j.id}"></span>
+        <div class="main"><div class="jchips">${j.season === 'IS' ? '<span class="jchip">インターンシップ&amp;キャリア</span>' : j.years.map((y) => `<span class="jchip">正社員 - 新卒${y}卒</span>`).join('')}<span class="jchip">${tl}</span></div><div class="t1">${esc(j.name)}${on && j.type === 'seminar' ? '<span class="picked">全日程を選択中</span>' : ns ? `<span class="picked">${ns}件の日程を選択中</span>` : ''}</div>
         <div class="t2">求人番号 ${j.id}${j.posted ? '' : '・掲載終了'}</div></div>
-        ${j.type === 'seminar' ? `<span class="slotlk">日程枠 ${SLOTS[j.id].length} ›</span>` : ''}</div>`;
+        ${j.type === 'seminar' ? `<span class="slotlk ${open ? 'on' : ''}" data-exp="${j.id}">${open ? '日程を閉じる ▲' : '日程を選ぶ ▼'}</span>` : ''}</div>
+        ${open ? slotsHtml(j) : ''}`;
     }).join('') : '<div class="rempty">条件に合う求人はありません。</div>';
-    const showRight = !isIS && M.focus && jobById(M.focus).type === 'seminar';
-    $('panes').classList.toggle('full', !showRight);
-    renderRight();
+    $('panes').classList.add('full');
     const chosen = [...M.jobs].map((j) => [`j:${j}`, jobLabel(j)]).concat([...M.slots].map((s) => { const [jid, sid] = s.split(':'); return [`s:${s}`, `${jobById(jid).name}：${slotLabel(jid, sid)}`]; }));
     $('chosen').innerHTML = chosen.length ? `<span class="lb2">選択中</span>${chosen.map(([k, t]) => `<span class="tag">${esc(t)}<span class="x" data-c="${esc(k)}">✕</span></span>`).join('')}<span class="clr" data-c="all">すべて解除</span>` : '<span class="lb2" style="color:#AAA;font-weight:400">まだ選んでいません（選ばなければ、すべての求人が対象です）</span>';
   }
-  function renderRight() {
-    const r = $('rightPane');
-    const j = M.focus && jobById(M.focus);
-    if (!j || j.type !== 'seminar') {
-      r.innerHTML = '<div class="rempty">説明会日程求人の「日程枠 ›」を押すと、<br>ここに日程枠が出ます。<br>日程枠を選ばなくても、求人にチェックを付ければ<br>その求人の応募すべてが対象になります。</div>';
-      return;
-    }
+  function slotsHtml(j) {
     const slots = SLOTS[j.id];
     const up = slots.filter((s) => !s.past);
     const past = slots.filter((s) => s.past);
     const apps = appsOfJob(j.id);
     const jobOn = M.jobs.has(j.id);
     const row = (sid, t1, t2, rr) => { const key = `${j.id}:${sid}`; const on = jobOn || M.slots.has(key); return `<div class="slr ${on ? 'on' : ''}" data-slot="${key}"><span class="box ${on ? 'on' : ''}"></span><div class="main"><div>${t1}</div><div class="t2">${t2}</div></div><div class="r">${rr}</div></div>`; };
-    let html = row('none', '日程の予約なし（未予約）', '応募したが、まだ日程枠を予約していない人', `${apps.filter((a) => a.slot === null).length}件`);
+    let html = row('none', '日程なし', '応募したが、まだ日程を予約していない人', `${apps.filter((a) => a.slot === null).length}件`);
     let mon = '';
     const list = M.showPast ? past.concat(up) : up;
     list.forEach((s) => {
@@ -536,9 +542,11 @@
       const n = apps.filter((a) => a.slot === s.id).length;
       html += row(s.id, s.label, s.venue, `予約 ${n}件／定員 ${s.cap}${n >= s.cap ? '<span class="fullb">満席</span>' : ''}`);
     });
-    r.innerHTML = `<div class="rh"><span class="rx" data-closeright="1" title="日程枠を閉じる">×</span><div class="t">${esc(j.name)} の日程枠<span>（これから ${up.length}枠・開催済み ${past.length}枠）</span></div><span class="all" data-allslots="1">${jobOn ? 'すべての日程枠の選択を外す' : 'すべての日程枠を選ぶ'}</span></div>
-      <div class="slots">${html}</div>${past.length ? `<div class="past" data-past="1">${M.showPast ? '開催済みの日程枠を隠す ▲' : `開催済みの日程枠（${past.length}枠）を表示 ▼`}</div>` : ''}`;
+    return `<div class="sub"><div class="subh"><span>これからの日程 ${up.length}件${past.length ? `・開催済み ${past.length}件` : ''}</span><span class="all" data-allslots="${j.id}">${jobOn ? 'すべての日程の選択を外す' : 'すべての日程を選ぶ'}</span></div>
+      ${html}${past.length ? `<div class="past" data-past="1">${M.showPast ? '開催済みの日程を隠す ▲' : `開催済みの日程（${past.length}件）を表示 ▼`}</div>` : ''}</div>`;
   }
+  $('kwTip').onclick = (e) => { e.preventDefault(); e.stopPropagation(); $('kwTip').classList.toggle('show'); };
+  document.addEventListener('click', () => $('kwTip').classList.remove('show'));
   $('courseBtn').onclick = openModal;
   $('kTip').onclick = (e) => { e.stopPropagation(); $('kTip').classList.toggle('show'); };
   document.addEventListener('click', () => $('kTip').classList.remove('show'));
@@ -547,7 +555,8 @@
   $('ov').onclick = closeModal;
   $('mdApply').onclick = () => { F.jobs = [...M.jobs]; F.slots = [...M.slots]; closeModal(); changed(); };
   $('kseg').onclick = (e) => { const s = e.target.closest('[data-s]'); if (s) { M.season = s.dataset.s; M.focus = null; renderModal(); } };
-  $('mtabs').onclick = (e) => { const t = e.target.closest('[data-t]'); if (t) { M.tab = t.dataset.t; renderModal(); } };
+  $('mdType').onchange = (e) => { M.tab = e.target.value; renderModal(); };
+  $('moreLk').onclick = () => { M.more = !M.more; renderModal(); };
   $('mdQ').oninput = () => { M.q = $('mdQ').value.trim(); renderModal(); };
   const MD_YEARS = [...new Set(JOBS.flatMap((j) => j.years))].sort();
   const drawMdYear = () => {
@@ -569,26 +578,21 @@
   });
   $('endedLbl').onclick = () => { M.ended = !M.ended; renderModal(); };
   $('jobList').onclick = (e) => {
+    const s = e.target.closest('[data-slot]');
+    if (s) { toggleSlot(s.dataset.slot); renderModal(); return; }
+    if (e.target.closest('[data-past]')) { M.showPast = !M.showPast; renderModal(); return; }
+    const al = e.target.closest('[data-allslots]');
+    if (al) { const j = al.dataset.allslots; if (M.jobs.has(j)) { M.jobs.delete(j); clearSlots(j); } else { clearSlots(j); M.jobs.add(j); } renderModal(); return; }
+    const x = e.target.closest('[data-exp]');
+    if (x) { M.focus = M.focus === x.dataset.exp ? null : x.dataset.exp; M.showPast = false; renderModal(); return; }
     const c = e.target.closest('[data-check]');
     if (c) { toggleJob(c.dataset.check); renderModal(); return; }
     const it = e.target.closest('[data-j]');
     if (!it) return;
     const j = jobById(it.dataset.j);
-    if (j.type === 'seminar') { M.focus = j.id; M.showPast = false; }
+    if (j.type === 'seminar') { M.focus = M.focus === j.id ? null : j.id; M.showPast = false; }
     else toggleJob(j.id);
     renderModal();
-  };
-  $('rightPane').onclick = (e) => {
-    const s = e.target.closest('[data-slot]');
-    if (s) { toggleSlot(s.dataset.slot); renderModal(); return; }
-    if (e.target.closest('[data-closeright]')) { M.focus = null; renderModal(); return; }
-    if (e.target.closest('[data-past]')) { M.showPast = !M.showPast; renderRight(); return; }
-    if (e.target.closest('[data-allslots]')) {
-      const j = M.focus;
-      if (M.jobs.has(j)) { M.jobs.delete(j); clearSlots(j); }
-      else { clearSlots(j); M.jobs.add(j); }
-      renderModal();
-    }
   };
   $('chosen').onclick = (e) => {
     const c = e.target.dataset.c;
@@ -692,31 +696,33 @@
       $('xTitle').textContent = '送信内容の確認';
       const first = apps[0];
       const err = schedErr();
+      const atD = new Date(`${X.date}T${X.hh}:${X.mi}:00`);
+      const sumWhen = X.when === 'at' ? (Number.isNaN(atD.getTime()) ? '指定した日時' : fmtWhen(atD, true)) : '今すぐ';
       body.innerHTML = `
-        <div class="mxr"><div class="mxl flat">宛先</div><div class="mxv flat"><span class="mxcnt"><b>${apps.length}</b>件</span><span class="mxlk" id="xToTgl">${X.showTo ? '宛先を閉じる ▲' : '宛先を確認する（1件ずつ外せます） ▼'}</span>
-          ${X.showTo ? `<div class="mxto">${apps.map((a) => { const j = jobById(a.job); return `<div class="tr"><span class="nm2">${esc(a.name)}</span><span class="jb">[${j.id}] ${esc(j.name)}${j.type === 'seminar' ? `<span class="sl2">${a.slot ? (() => { const s = SLOTS[j.id].find((x) => x.id === a.slot); return `${s.label}　${esc(s.venue)}`; })() : '未予約'}</span>` : ''}${a.manual ? '<span class="mn">手動登録・送りません</span>' : ''}</span><span class="rm" data-rm="${a.id}">✕ 外す</span></div>`; }).join('') || '<div class="tr">宛先がありません。</div>'}</div>` : ''}
-          ${nManual ? `<div class="mxwarn">メールを送れない応募（手動登録）${nManual}件には送りません。送るのは${nSend}件です。</div>` : ''}
+        <div class="mxsum"><b>${nSend}件</b>の応募者に、<b>${sumWhen}</b>${X.when === 'at' ? 'に' : ''}送ります。${nManual ? `<span class="s">手動登録の${nManual}件は、メールを送れないため送りません。</span>` : ''}</div>
+        <div class="wbig">
+          <div class="wb ${X.when === 'now' ? 'on' : ''}" data-w="now"><span class="rd ${X.when === 'now' ? 'on' : ''}"></span><div><b>今すぐ送る</b><span>受け付けた順に送ります</span></div></div>
+          <div class="wb ${X.when === 'at' ? 'on' : ''}" data-w="at"><span class="rd ${X.when === 'at' ? 'on' : ''}"></span><div><b>日時を決めて予約する</b><span>7日後まで選べます。送信の5分前まで取り消せます</span></div></div>
+        </div>
+        ${X.when === 'at' ? `<div class="when2"><span class="lb3">送る日時</span><input type="date" id="xDate" value="${X.date}" min="${isoDay(new Date())}" max="${isoDay(new Date(Date.now() + 7 * 86400000))}">
+          <select id="xHH">${Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0')).map((h) => `<option ${h === X.hh ? 'selected' : ''}>${h}</option>`).join('')}</select>:<select id="xMI">${['00', '10', '20', '30', '40', '50'].map((m) => `<option ${m === X.mi ? 'selected' : ''}>${m}</option>`).join('')}</select>
+          <span class="mxerr" id="xSchedErr" style="margin:0 0 0 8px">${esc(err)}</span></div>` : ''}
+        <div class="mxr"><div class="mxl flat">宛先</div><div class="mxv flat"><span class="mxcnt"><b>${nSend}</b>件${nManual ? `<span class="mxsub">（選んだ${apps.length}件のうち、手動登録の${nManual}件を除く）</span>` : ''}</span><span class="mxlk" id="xToTgl">${X.showTo ? '宛先を閉じる ▲' : '宛先を確認する（1件ずつ外せます） ▼'}</span>
+          ${X.showTo ? `<div class="mxto">${apps.map((a) => { const j = jobById(a.job); return `<div class="tr"><span class="nm2">${esc(a.name)}</span><span class="jb">[${j.id}] ${esc(j.name)}${j.type === 'seminar' ? `<span class="sl2">${a.slot ? (() => { const s = SLOTS[j.id].find((x) => x.id === a.slot); return `${s.label}　${esc(s.venue)}`; })() : '日程なし'}</span>` : ''}${a.manual ? '<span class="mn">手動登録・送りません</span>' : ''}</span><span class="rm" data-rm="${a.id}">✕ 外す</span></div>`; }).join('') || '<div class="tr">宛先がありません。</div>'}</div>` : ''}
           ${nSend ? '' : '<div class="mxerr">送れる宛先が0件です。戻って選び直してください。</div>'}</div></div>
         <div class="mxr"><div class="mxl flat">件名</div><div class="mxv flat">${first ? esc(fill(X.subj, first)) : esc(X.subj)}</div></div>
         <div class="mxr"><div class="mxl flat">本文</div><div class="mxv flat"><div class="mxprev"><div class="ph">${first ? `プレビュー：宛先の1件目（${esc(first.name)}さん）で置換タグを置き換えて表示しています` : 'プレビュー'}</div><div class="pb">${esc(first ? fill(X.body, first) : X.body)}</div></div></div></div>
-        <div class="mxr"><div class="mxl flat">添付ファイル</div><div class="mxv flat">${X.files.length ? `<div class="mxchips" style="margin:0">${X.files.map((f) => `<span class="mxchip">${esc(f.name)}<span class="sz">${fsize(f.size)}</span></span>`).join('')}</div>` : 'なし'}</div></div>
-        <div class="mxr"><div class="mxl">送信タイミング</div><div class="mxv mxtime">
-          <div class="wopt" data-w="now"><span class="rd ${X.when === 'now' ? 'on' : ''}"></span>今すぐ送る</div>
-          <div class="wopt" data-w="at"><span class="rd ${X.when === 'at' ? 'on' : ''}"></span>日時を指定して予約する
-            <span class="when ${X.when === 'at' ? '' : 'dis'}"><input type="date" id="xDate" value="${X.date}" min="${isoDay(new Date())}" max="${isoDay(new Date(Date.now() + 7 * 86400000))}">
-            <select id="xHH">${Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0')).map((h) => `<option ${h === X.hh ? 'selected' : ''}>${h}</option>`).join('')}</select>:<select id="xMI">${['00', '10', '20', '30', '40', '50'].map((m) => `<option ${m === X.mi ? 'selected' : ''}>${m}</option>`).join('')}</select></span></div>
-          <div class="mxerr" id="xSchedErr">${esc(err)}</div>
-          <div class="mxnote">予約できるのは7日後までです。予約は、送信予定の5分前まで一括送付履歴から取り消せます。</div>
-          <div class="mxfix">受け付けた時点の宛先${nSend}件と添付ファイルで送ります。予約した日時に、一覧の絞り込みはやり直しません。</div>
-        </div></div>`;
+        <div class="mxr"><div class="mxl flat">添付ファイル</div><div class="mxv flat">${X.files.length ? `<div class="mxchips" style="margin:0">${X.files.map((f) => `<span class="mxchip">${esc(f.name)}<span class="sz">${fsize(f.size)}</span></span>`).join('')}</div>` : 'なし'}</div></div>`;
       const label = X.when === 'at' ? '予約する' : '送信する';
       foot.innerHTML = `<span class="sp"></span><span class="mbtn" id="xBack">戻る</span><span class="mbtn pr ${!nSend || err || X.sending ? 'dis' : ''}" id="xSend">${X.sending ? '受け付けています…' : label}</span>`;
       $('xToTgl').onclick = () => { X.showTo = !X.showTo; renderMail(); };
       body.querySelectorAll('[data-rm]').forEach((r) => { r.onclick = () => { X.ids = X.ids.filter((id) => id !== Number(r.dataset.rm)); renderMail(); }; });
-      body.querySelectorAll('[data-w]').forEach((l) => { l.onclick = (e) => { if (e.target.closest('.when') && X.when === 'at') return; if (X.when !== l.dataset.w) { X.when = l.dataset.w; renderMail(); } }; });
-      $('xDate').onchange = (e) => { X.date = e.target.value; renderMail(); };
-      $('xHH').onchange = (e) => { X.hh = e.target.value; renderMail(); };
-      $('xMI').onchange = (e) => { X.mi = e.target.value; renderMail(); };
+      body.querySelectorAll('[data-w]').forEach((l) => { l.onclick = () => { if (X.when !== l.dataset.w) { X.when = l.dataset.w; renderMail(); } }; });
+      if ($('xDate')) {
+        $('xDate').onchange = (e) => { X.date = e.target.value; renderMail(); };
+        $('xHH').onchange = (e) => { X.hh = e.target.value; renderMail(); };
+        $('xMI').onchange = (e) => { X.mi = e.target.value; renderMail(); };
+      }
       $('xBack').onclick = () => { X.step = 'edit'; renderMail(); };
       $('xSend').onclick = () => {
         if (X.sending || !nSend || schedErr()) return;

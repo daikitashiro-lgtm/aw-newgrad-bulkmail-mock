@@ -20,6 +20,7 @@
     <h1>新卒応募者・説明会</h1>
     <div class="tabs"><span class="on">応募者一覧</span><span>説明会求人一覧</span></div>
 
+    <div class="stick" id="stick">
     <div class="search">
       <div class="row">
         <div class="pick" id="courseBtn"><span class="lb">コース・日程枠</span><span id="courseVal">すべて</span><span class="go">選ぶ ›</span></div>
@@ -27,13 +28,12 @@
           <div class="sel" id="yearBtn" style="width:230px"><span class="lb">応募者の卒年度</span><span id="yearVal">すべて</span><span class="cv">▼</span></div>
           <div class="dd" id="yearDD"></div>
         </div>
-        <label class="fw"><span class="k">フリーワード</span><input id="kwIn" placeholder="例：IS参加済み　大阪　-辞退"></label>
+        <label class="fw"><span class="k">フリーワード</span><span class="qtip down click" id="kwTip">?<span class="qbox">メモ・応募者名・求人・勤務地から探します。<br>・スペースで区切ると、すべての言葉を含む応募に絞ります。<br>・言葉の前に「-」を付けると、その言葉を含まない応募に絞ります。<br>例：IS参加済み　大阪　-辞退</span></span><input id="kwIn" placeholder="メモ・応募者名・求人で探す"></label>
         <div class="btn" id="searchBtn">検索</div>
         <span class="clear" id="clearBtn">クリア</span>
       </div>
       <div class="hint">
-        <label class="cb" id="memoEmptyLbl"><span class="box" id="memoEmptyBox"></span>メモが空の人だけ</label>
-        メモ・応募者名・求人・勤務地から探します。スペース区切りはすべてを含む、「-」付きは含まない応募に絞ります。
+        <label class="cb" id="memoEmptyLbl"><span class="box" id="memoEmptyBox"></span>メモ未記入の人のみ</label>
         <span class="more" id="moreBtn">詳しい条件 ▼</span>
       </div>
       <div class="detail" id="detail">
@@ -51,6 +51,7 @@
       <div class="btn dlbtn" id="dlBtn">⤓ 一括ダウンロードする</div>
     </div>
     <div class="bar2" id="bar2"></div>
+    </div>
     <table>
       <thead><tr><th style="width:44px"><span class="box" id="headBox"></span></th><th style="width:22%">応募者</th><th style="width:27%">求人内容</th><th>面接日／メモ</th><th style="width:136px;padding-left:0">対応状況</th><th class="ops"></th></tr></thead>
       <tbody id="tbody"></tbody>
@@ -69,7 +70,11 @@
       <div class="desc" id="mdDesc"></div>
       <div class="kind"><div class="kseg" id="kseg"></div><span class="qtip down click" id="kTip">?<span class="qbox">応募が1件以上ある求人だけを出しています。<br>応募がまだない求人は出ません。</span></span></div>
       <div class="tools">
-        <label class="srch"><span class="mg">⌕</span><input id="mdQ" placeholder="求人名・求人番号で探す"></label>
+        <label class="srch big"><span class="mg">⌕</span><input id="mdQ" placeholder="求人名・求人番号の一部を入れて探す（例：説明会、営業）"></label>
+        <span class="morelk" id="moreLk">もっと絞る ▼</span>
+      </div>
+      <div class="moreRow" id="moreRow">
+        <select class="msel" id="mdType"></select>
         <div class="ddwrap"><div class="msel mselbtn" id="mdYearBtn"><span id="mdYearVal">対象卒年：すべて</span><span class="cv">▼</span></div><div class="dd" id="mdYearDD"></div></div>
         <label class="cb" id="endedLbl"><span class="box" id="endedBox"></span>掲載終了/未掲載の求人も表示</label>
       </div>
