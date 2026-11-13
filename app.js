@@ -533,17 +533,17 @@
     const past = slots.filter((s) => s.past);
     const apps = appsOfJob(j.id);
     const jobOn = M.jobs.has(j.id);
-    const row = (sid, t1, t2, rr) => { const key = `${j.id}:${sid}`; const on = jobOn || M.slots.has(key); return `<div class="slr ${on ? 'on' : ''}" data-slot="${key}"><span class="box ${on ? 'on' : ''}"></span><div class="main"><div>${t1}</div><div class="t2">${t2}</div></div><div class="r">${rr}</div></div>`; };
+    const row = (sid, t1, t2, rr, cls = '') => { const key = `${j.id}:${sid}`; const on = jobOn || M.slots.has(key); return `<div class="slr ${on ? 'on' : ''} ${cls}" data-slot="${key}"><span class="box ${on ? 'on' : ''}"></span><div class="main"><div>${t1}</div><div class="t2">${t2}</div></div><div class="r">${rr}</div></div>`; };
     let html = row('none', '日程なし', '応募したが、まだ日程を予約していない人', `${apps.filter((a) => a.slot === null).length}件`);
     let mon = '';
     const list = M.showPast ? past.concat(up) : up;
     list.forEach((s) => {
       if (s.mon !== mon) { mon = s.mon; html += `<div class="mon">${mon}${s.past ? '（開催済み）' : ''}</div>`; }
       const n = apps.filter((a) => a.slot === s.id).length;
-      html += row(s.id, s.label, s.venue, `予約 ${n}件／定員 ${s.cap}${n >= s.cap ? '<span class="fullb">満席</span>' : ''}`);
+      html += row(s.id, s.label, s.venue, `予約 ${n}件／定員 ${s.cap}${n >= s.cap ? '<span class="fullb">満席</span>' : ''}`, s.past ? 'pastr' : '');
     });
-    return `<div class="sub"><div class="subh"><span>これからの日程 ${up.length}件${past.length ? `・開催済み ${past.length}件` : ''}</span><span class="all" data-allslots="${j.id}">${jobOn ? 'すべての日程の選択を外す' : 'すべての日程を選ぶ'}</span></div>
-      ${html}${past.length ? `<div class="past" data-past="1">${M.showPast ? '開催済みの日程を隠す ▲' : `開催済みの日程（${past.length}件）を表示 ▼`}</div>` : ''}</div>`;
+    return `<div class="sub"><div class="subh"><span class="cnt">これからの日程 ${up.length}件</span>${past.length ? `<label class="cb pastcb" data-past="1"><span class="box ${M.showPast ? 'on' : ''}"></span>開催済みの日程も表示（${past.length}件）</label>` : ''}<span class="all" data-allslots="${j.id}">${jobOn ? 'すべての日程の選択を外す' : 'すべての日程を選ぶ'}</span></div>
+      ${html}</div>`;
   }
   $('kwTip').onclick = (e) => { e.preventDefault(); e.stopPropagation(); $('kwTip').classList.toggle('show'); };
   document.addEventListener('click', () => $('kwTip').classList.remove('show'));

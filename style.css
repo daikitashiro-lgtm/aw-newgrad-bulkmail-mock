@@ -353,7 +353,11 @@ body.dirty table, body.dirty .pager, body.dirty .pinfo, body.dirty .empty { opac
 .slotlk.on { background: #1FA9E1; color: #fff; border-color: #1FA9E1; }
 .sub { background: #FAFCFD; border-bottom: 1px solid #E5E5E5; padding: 0 0 6px 38px; }
 .subh { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px 6px 0; font-size: 12px; color: #666; }
-.subh .all { color: #1FA9E1; text-decoration: underline; cursor: pointer; }
+.subh .all { color: #1FA9E1; text-decoration: underline; cursor: pointer; margin-left: auto; }
+.subh { justify-content: flex-start; }
+.subh .cnt { margin-right: 18px; }
+.subh .pastcb { font-size: 12px; color: #444; cursor: pointer; }
+.sub .slr.pastr .main, .sub .slr.pastr .r { color: #999; }
 .sub .slr { padding: 7px 14px 7px 6px; background: transparent; }
 .sub .slr.on { background: #EEF8FD; }
 .sub .mon { padding: 4px 6px; background: #F0F0F0; }
