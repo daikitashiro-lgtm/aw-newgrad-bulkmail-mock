@@ -133,7 +133,7 @@ td.cs { padding-left: 0; }
 
 /* モーダル */
 .ov { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 50; }
-.md { display: none; position: fixed; left: 50%; top: 30px; transform: translateX(-50%); width: 1040px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,.3); z-index: 51; }
+.md { display: none; position: fixed; left: 50%; top: 30px; transform: translateX(-50%); width: 720px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,.3); z-index: 51; }
 .ov.open, .md.open { display: block; }
 .mh { height: 60px; background: #F5F5F5; border-bottom: 1px solid #E0E0E0; display: flex; align-items: center; justify-content: center; position: relative; }
 .mh h2 { margin: 0; font-size: 19px; color: #444; }
@@ -346,7 +346,7 @@ body.dirty table, body.dirty .pager, body.dirty .pinfo, body.dirty .empty { opac
 .srch.big { height: 44px; border-color: #1FA9E1; }
 .srch.big input { font-size: 14px; }
 .morelk { color: #1FA9E1; font-size: 13px; cursor: pointer; white-space: nowrap; }
-.moreRow { display: none; gap: 10px; align-items: center; margin: -2px 0 12px; }
+.moreRow { display: none; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: -2px 0 12px; }
 .moreRow.open { display: flex; }
 .mtabs { display: none !important; }
 .slotlk { font-size: 12px; padding: 3px 12px; cursor: pointer; }
