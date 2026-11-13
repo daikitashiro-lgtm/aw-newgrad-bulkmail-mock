@@ -241,7 +241,7 @@
     if (isDirty()) {
       $('headBox').classList.remove('on');
       $('bar2').className = 'bar2 dirtyb';
-      $('bar2').innerHTML = '<span class="dmsg"><span class="ic">!</span>条件が変わっています。「検索」を押すと一覧が新しくなります。それまでは、応募の選択とメールの送信はできません。</span><span class="btn dsb" id="doSearch">検索する</span>';
+      $('bar2').innerHTML = '<span class="dmsg"><span class="ic">!</span>条件が変わっています。「検索」を押すと一覧が新しくなります。それまでは、応募の選択とメールの送信はできません。</span>';
       return;
     }
     const rows = pageRows();
@@ -434,9 +434,6 @@
       selected = new Set();
     } else if (t.id === 'sendBtn') {
       if (selected.size) openMail();
-      return;
-    } else if (t.id === 'doSearch') {
-      search();
       return;
     } else return;
     renderTable(); renderBar();
