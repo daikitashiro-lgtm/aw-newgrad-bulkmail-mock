@@ -502,7 +502,6 @@
   function renderModal() {
     const fs = M.fs;
     const isIS = !fs.season.has('main');
-    $('mdDesc').textContent = '探したいコース・日程枠にチェックを付けてください。';
     const d = defaultFs();
     const moreSet = fs.year.size !== d.year.size || fs.post.size !== 1 || !fs.post.has('on') || fs.past.size > 0;
     $('moreLk').textContent = M.more ? '∧ もっと絞るを閉じる' : `∨ もっと絞る${moreSet ? '（指定中）' : ''}`;
@@ -526,7 +525,7 @@
     }).join('') : '<div class="rempty">条件に合う求人はありません。</div>';
     $('panes').classList.add('full');
     const chosen = [...M.jobs].map((j) => [`j:${j}`, jobLabel(j)]).concat([...M.slots].map((s) => { const [jid, sid] = s.split(':'); return [`s:${s}`, `${jobById(jid).name}：${slotLabel(jid, sid)}`]; }));
-    $('chosen').innerHTML = chosen.length ? `<span class="lb2">選択中</span>${chosen.map(([k, t]) => `<span class="tag">${esc(t)}<span class="x" data-c="${esc(k)}">✕</span></span>`).join('')}<span class="clr" data-c="all">すべて解除</span>` : '<span class="lb2" style="color:#AAA;font-weight:400">まだ選んでいません（選ばなければ、すべての求人が対象です）</span>';
+    $('chosen').innerHTML = chosen.length ? `<span class="lb2">選択中</span>${chosen.map(([k, t]) => `<span class="tag">${esc(t)}<span class="x" data-c="${esc(k)}">✕</span></span>`).join('')}<span class="clr" data-c="all">すべて解除</span>` : '<span class="lb2" style="color:#AAA;font-weight:400">未選択（選ばなければ、すべての求人が対象です）</span>';
   }
   function slotsHtml(j) {
     const slots = SLOTS[j.id];
