@@ -450,7 +450,7 @@
   $('demoDl').onchange = renderAlerts;
 
   // ---------- コース・日程枠モーダル ----------
-  const M = { fs: null, q: '', more: false, focus: null, jobs: new Set(), slots: new Set() };
+  const M = { fs: null, q: '', focus: null, jobs: new Set(), slots: new Set() };
   const appsOfJob = (jid) => APPS.filter((a) => a.job === jid);
   const hasApps = (jid) => APPS.some((a) => a.job === jid);
   const allSlotKeys = (jid) => ['none', ...SLOTS[jid].map((x) => x.id)].map((sid) => `${jid}:${sid}`);
@@ -493,7 +493,7 @@
       .sort((a, b) => b.created.localeCompare(a.created));
   }
   function openModal() {
-    Object.assign(M, { fs: defaultFs(), q: '', more: false, focus: null, jobs: new Set(F.jobs), slots: new Set(F.slots) });
+    Object.assign(M, { fs: defaultFs(), q: '', focus: null, jobs: new Set(F.jobs), slots: new Set(F.slots) });
     $('mdQ').value = '';
     $('ov').classList.add('open'); $('md').classList.add('open');
     renderModal();
@@ -502,10 +502,7 @@
   function renderModal() {
     const fs = M.fs;
     const isIS = !fs.season.has('main');
-    const d = defaultFs();
-    const moreSet = fs.year.size !== d.year.size || fs.post.size !== 1 || !fs.post.has('on') || fs.past.size > 0;
-    $('moreLk').textContent = M.more ? '∧ もっと絞るを閉じる' : `∨ もっと絞る${moreSet ? '（指定中）' : ''}`;
-    $('frows').innerHTML = FROWS.filter((r) => !r[3] || M.more).map(([f, label, opts]) => `<div class="frow"><span class="fl">${label}</span>${opts().map(([v, t]) => {
+    $('frows').innerHTML = FROWS.map(([f, label, opts]) => `<div class="frow"><span class="fl">${label}</span>${opts().map(([v, t]) => {
       const dis = f === 'type' && v === 'seminar' && isIS;
       return `<label class="cb ${dis ? 'dis' : ''}" data-f="${f}" data-v="${v}"><span class="box ${fs[f].has(v) && !dis ? 'on' : ''}"></span>${t}</label>`;
     }).join('')}</div>`).join('');
@@ -554,7 +551,6 @@
   $('mdCancel').onclick = closeModal;
   $('ov').onclick = closeModal;
   $('mdApply').onclick = () => { F.jobs = [...M.jobs]; F.slots = [...M.slots]; closeModal(); changed(); };
-  $('moreLk').onclick = () => { M.more = !M.more; renderModal(); };
   $('mdQ').oninput = () => { M.q = $('mdQ').value.trim(); renderModal(); };
   const MD_YEARS = [...new Set(JOBS.flatMap((j) => j.years))].sort();
   $('frows').onclick = (e) => {
