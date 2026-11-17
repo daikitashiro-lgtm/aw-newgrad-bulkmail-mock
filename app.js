@@ -240,7 +240,7 @@
 
   function renderBar() {
     if (isDirty()) {
-      $('headBox').classList.remove('on');
+      $('headBox').classList.remove('on', 'part');
       $('bar2').className = 'bar2 dirtyb';
       $('bar2').innerHTML = '<span class="dmsg"><span class="ic">!</span>条件が変わっています。「検索」を押すと一覧が新しくなります。それまでは、応募の選択とメールの送信はできません。</span>';
       return;
@@ -251,12 +251,12 @@
     const cnt = selected.size;
     const pageAllSel = pageN > 0 && rows.every((a) => selected.has(a.id));
     const allSel = total > 0 && cnt === total;
-    const pageActive = pageAllSel && !allSel && cnt === pageN;
     $('headBox').classList.toggle('on', pageAllSel);
+    $('headBox').classList.toggle('part', !pageAllSel && rows.some((a) => selected.has(a.id)));
     const cls = cnt === 0 ? 'none' : allSel ? 'all' : '';
     $('bar2').className = `bar2 ${cls}`;
     $('bar2').innerHTML = `<span class="sc"><b>${cnt}</b>件を選択中</span>
-      <div class="selbtns"><span class="sb ${pageActive ? 'on' : ''}" id="selPage">このページの全件を選択<span class="n">${pageN}件</span></span><span class="sb ${allSel ? 'on' : ''}" id="selAll">検索結果の全件を選択<span class="n">${total}件</span></span></div>
+      <div class="selbtns"><span class="sb ${allSel ? 'on' : ''}" id="selAll">検索結果の全件を選択<span class="n">${total}件</span></span></div>
       <span class="rs" id="selClear">${cnt ? '選択を解除' : ''}</span>
       <div class="primary ${cnt ? '' : 'dis'}" id="sendBtn">${cnt ? `選択した${cnt}件にメールを送る` : '選択した応募にメールを送る'}</div>`;
   }
@@ -424,10 +424,7 @@
     const t = e.target.closest('[id]');
     if (!t) return;
     const rows = pageRows();
-    if (t.id === 'selPage') {
-      const active = t.classList.contains('on');
-      selected = new Set(active ? [] : rows.map((a) => a.id));
-    } else if (t.id === 'selAll') {
+    if (t.id === 'selAll') {
       const active = t.classList.contains('on');
       selected = new Set(active ? [] : results.map((a) => a.id));
     } else if (t.id === 'selClear') {
