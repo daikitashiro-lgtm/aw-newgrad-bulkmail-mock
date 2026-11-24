@@ -92,7 +92,7 @@
   });
   APPS.forEach((a) => { if (a.status === '面接日確定' && a.id % 2 === 0) a.labels.push(['pk', '本日面接あり']); });
   APPS.sort((a, b) => b.date - a.date || a.id - b.id);
-  APPS.forEach((a) => { if (a.name === '石井 陸') a.manual = true; });
+  APPS.forEach((a) => { if (a.name === '石井 陸') a.noMail = true; });
   const jobById = (id) => JOBS.find((j) => j.id === id);
 
   const YEARS = ['27', '28', '29', '30'];
@@ -650,8 +650,8 @@
     const body = $('xBody'); const foot = $('xFoot');
     $('xmd').classList.toggle('narrow', X.step === 'done');
     const apps = X.ids.map((id) => APPS.find((a) => a.id === id));
-    const nManual = apps.filter((a) => a.manual).length;
-    const nSend = apps.length - nManual;
+    const nNoMail = apps.filter((a) => a.noMail).length;
+    const nSend = apps.length - nNoMail;
     if (X.step === 'edit') {
       $('xTitle').textContent = 'メールを作成';
       body.innerHTML = `
@@ -688,7 +688,7 @@
       const atD = new Date(`${X.date}T${X.hh}:${X.mi}:00`);
       const sumWhen = X.when === 'at' ? (Number.isNaN(atD.getTime()) ? '指定した日時' : fmtWhen(atD, true)) : '今すぐ';
       body.innerHTML = `
-        <div class="mxsum"><b>${nSend}件</b>の応募者に、<b>${sumWhen}</b>${X.when === 'at' ? 'に' : ''}送ります。${nManual ? `<span class="s">手動登録の${nManual}件は、メールを送れないため送りません。</span>` : ''}</div>
+        <div class="mxsum"><b>${nSend}件</b>の応募者に、<b>${sumWhen}</b>${X.when === 'at' ? 'に' : ''}送ります。${nNoMail ? `<span class="s">メールアドレスが無い${nNoMail}件には送りません。</span>` : ''}</div>
         <div class="wbig">
           <div class="wb ${X.when === 'now' ? 'on' : ''}" data-w="now"><span class="rd ${X.when === 'now' ? 'on' : ''}"></span><div><b>今すぐ送る</b><span>受け付けた順に送ります</span></div></div>
           <div class="wb ${X.when === 'at' ? 'on' : ''}" data-w="at"><span class="rd ${X.when === 'at' ? 'on' : ''}"></span><div><b>日時を決めて予約する</b><span>7日後まで選べます。送信の5分前まで取り消せます</span></div></div>
@@ -696,8 +696,8 @@
         ${X.when === 'at' ? `<div class="when2"><span class="lb3">送る日時</span><input type="date" id="xDate" value="${X.date}" min="${isoDay(new Date())}" max="${isoDay(new Date(Date.now() + 7 * 86400000))}">
           <select id="xHH">${Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0')).map((h) => `<option ${h === X.hh ? 'selected' : ''}>${h}</option>`).join('')}</select>:<select id="xMI">${['00', '10', '20', '30', '40', '50'].map((m) => `<option ${m === X.mi ? 'selected' : ''}>${m}</option>`).join('')}</select>
           <span class="mxerr" id="xSchedErr" style="margin:0 0 0 8px">${esc(err)}</span></div>` : ''}
-        <div class="mxr"><div class="mxl flat">宛先</div><div class="mxv flat"><span class="mxcnt"><b>${nSend}</b>件${nManual ? `<span class="mxsub">（選んだ${apps.length}件のうち、手動登録の${nManual}件を除く）</span>` : ''}</span><span class="mxlk" id="xToTgl">${X.showTo ? '宛先を閉じる ▲' : '宛先を確認する（1件ずつ外せます） ▼'}</span>
-          ${X.showTo ? `<div class="mxto">${apps.map((a) => { const j = jobById(a.job); return `<div class="tr"><span class="nm2">${esc(a.name)}</span><span class="jb">[${j.id}] ${esc(j.name)}${j.type === 'seminar' ? `<span class="sl2">${a.slot ? (() => { const s = SLOTS[j.id].find((x) => x.id === a.slot); return `${s.label}　${esc(s.venue)}`; })() : '日程なし'}</span>` : ''}${a.manual ? '<span class="mn">手動登録・送りません</span>' : ''}</span><span class="rm" data-rm="${a.id}">✕ 外す</span></div>`; }).join('') || '<div class="tr">宛先がありません。</div>'}</div>` : ''}
+        <div class="mxr"><div class="mxl flat">宛先</div><div class="mxv flat"><span class="mxcnt"><b>${nSend}</b>件${nNoMail ? `<span class="mxsub">（選んだ${apps.length}件のうち、メールアドレスが無い${nNoMail}件を除く）</span>` : ''}</span><span class="mxlk" id="xToTgl">${X.showTo ? '宛先を閉じる ▲' : '宛先を確認する（1件ずつ外せます） ▼'}</span>
+          ${X.showTo ? `<div class="mxto">${apps.map((a) => { const j = jobById(a.job); return `<div class="tr"><span class="nm2">${esc(a.name)}</span><span class="jb">[${j.id}] ${esc(j.name)}${j.type === 'seminar' ? `<span class="sl2">${a.slot ? (() => { const s = SLOTS[j.id].find((x) => x.id === a.slot); return `${s.label}　${esc(s.venue)}`; })() : '日程なし'}</span>` : ''}${a.noMail ? '<span class="mn">メールアドレスなし・送りません</span>' : ''}</span><span class="rm" data-rm="${a.id}">✕ 外す</span></div>`; }).join('') || '<div class="tr">宛先がありません。</div>'}</div>` : ''}
           ${nSend ? '' : '<div class="mxerr">送れる宛先が0件です。戻って選び直してください。</div>'}</div></div>
         <div class="mxr"><div class="mxl flat">件名</div><div class="mxv flat">${first ? esc(fill(X.subj, first)) : esc(X.subj)}</div></div>
         <div class="mxr"><div class="mxl flat">本文</div><div class="mxv flat"><div class="mxprev"><div class="ph">${first ? `プレビュー：宛先の1件目（${esc(first.name)}さん）で置換タグを置き換えて表示しています` : 'プレビュー'}</div><div class="pb">${esc(first ? fill(X.body, first) : X.body)}</div></div></div></div>
@@ -721,14 +721,14 @@
     } else {
       $('xTitle').textContent = '受け付けました';
       body.innerHTML = `<div class="mxdone"><div class="h">${X.at ? '送信の予約を受け付けました。' : '送信を受け付けました。'}</div><div class="s">結果は、一覧左下の<span class="mxlk" data-hist="1" style="margin:0">「一括送付履歴を確認」</span>から確認できます。${X.at ? '予約は、送信予定の5分前まで取り消せます。' : '受け付けた順に送ります。'}</div>
-        <div class="mxkv"><span class="k">件名</span><span>${esc(X.subj)}</span><span class="k">宛先</span><span>${nSend}件${nManual ? `（手動登録の${nManual}件は送りません）` : ''}</span><span class="k">送信予定</span><span>${X.at ? fmtWhen(X.at, true) : '今すぐ'}</span><span class="k">添付ファイル</span><span>${X.files.length ? X.files.map((f) => esc(f.name)).join('<br>') : 'なし'}</span></div></div>`;
+        <div class="mxkv"><span class="k">件名</span><span>${esc(X.subj)}</span><span class="k">宛先</span><span>${nSend}件${nNoMail ? `（メールアドレスが無い${nNoMail}件には送りません）` : ''}</span><span class="k">送信予定</span><span>${X.at ? fmtWhen(X.at, true) : '今すぐ'}</span><span class="k">添付ファイル</span><span>${X.files.length ? X.files.map((f) => esc(f.name)).join('<br>') : 'なし'}</span></div></div>`;
       foot.innerHTML = '<span class="sp"></span><span class="mbtn" id="xBack">閉じる</span>';
       $('xBack').onclick = finishMail;
     }
   }
   function finishMail() {
     closeMail();
-    HIST.push({ id: `h${Date.now()}`, st: X.at ? 'rsv' : 'run', at: X.at || new Date(), subj: X.subj, count: X.ids.length, manual: X.ids.filter((id) => APPS.find((a) => a.id === id).manual).length, ids: [...X.ids], body: X.body, files: X.files.map((f) => f.name), fail: [] });
+    HIST.push({ id: `h${Date.now()}`, st: X.at ? 'rsv' : 'run', at: X.at || new Date(), subj: X.subj, count: X.ids.length, noMail: X.ids.filter((id) => APPS.find((a) => a.id === id).noMail).length, ids: [...X.ids], body: X.body, files: X.files.map((f) => f.name), fail: [] });
     syncFromHist();
     selected = new Set();
     render();
@@ -748,11 +748,11 @@
     const runs = HIST.filter((h) => h.st === 'run').sort((a, b) => b.at - a.at);
     const rsvs = HIST.filter((h) => h.st === 'rsv').sort((a, b) => a.at - b.at);
     if (runs.length) MI.run = runs[0].subj;
-    if (rsvs.length) MI.rsv = { when: fmtWhen(rsvs[0].at), subj: rsvs[0].subj, count: rsvs[0].count - (rsvs[0].manual || 0) };
+    if (rsvs.length) MI.rsv = { when: fmtWhen(rsvs[0].at), subj: rsvs[0].subj, count: rsvs[0].count - (rsvs[0].noMail || 0) };
     MI.nRsv = rsvs.length;
     $('demoMail').value = runs.length ? (rsvs.length ? 'runrsv' : 'run') : (rsvs.length ? (rsvs.length > 1 ? 'rsv2' : 'rsv') : 'none');
     const rsvIds = new Set(rsvs.flatMap((h) => h.ids));
-    APPS.forEach((a) => { a.labels = a.labels.filter((l) => l[1] !== '送信予約中' || a.dummyRsv); if (rsvIds.has(a.id) && !a.manual) a.labels.push(['gy', '送信予約中']); });
+    APPS.forEach((a) => { a.labels = a.labels.filter((l) => l[1] !== '送信予約中' || a.dummyRsv); if (rsvIds.has(a.id) && !a.noMail) a.labels.push(['gy', '送信予約中']); });
   }
   APPS.forEach((a) => { if (a.labels.some((l) => l[1] === '送信予約中')) a.dummyRsv = true; });
   const canCancel = (h) => h.at.getTime() - Date.now() > 5 * 60000;
@@ -777,7 +777,7 @@
             ${nf ? `<div class="hfail">未達の学生：${h.fail.map(([n, r]) => `<b>${esc(n)}</b>（${esc(r)}）`).join('、')}</div>` : ''}
             <span class="mxlk" style="margin:0" data-body="${h.id}">${h.st === 'rsv' ? '送る本文' : '送った本文'}を${open ? '閉じる ▲' : '見る ▼'}</span>
             ${open ? `<div class="hbody">${esc(h.body)}</div>` : ''}</div>
-          <div class="hn">${h.st === 'done' ? `送付 ${h.count - nf - (h.del || 0) - (h.manual || 0)}件${nf ? `<br><span class="red">未達 ${nf}件</span>` : ''}${h.del ? `<br><span class="gy2">応募者削除 ${h.del}件（送らず）</span>` : ''}` : `${h.count - (h.manual || 0)}件`}${h.manual ? `<br><span class="gy2">手動登録 ${h.manual}件（送らず）</span>` : ''}</div>
+          <div class="hn">${h.st === 'done' ? `送付 ${h.count - nf - (h.del || 0) - (h.noMail || 0)}件${nf ? `<br><span class="red">未達 ${nf}件</span>` : ''}${h.del ? `<br><span class="gy2">応募者削除 ${h.del}件（送らず）</span>` : ''}` : `${h.count - (h.noMail || 0)}件`}${h.noMail ? `<br><span class="gy2">メールアドレスなし ${h.noMail}件（送らず）</span>` : ''}</div>
           <div class="hop">${op}</div></div>`;
       }).join('')}`;
   }
