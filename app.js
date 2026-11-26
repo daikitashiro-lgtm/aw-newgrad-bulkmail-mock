@@ -481,11 +481,12 @@
     ['post', '掲載状況', () => [['on', '掲載中'], ['off', '掲載終了・未掲載']], true],
     ['past', '日程枠', () => [['on', '開催済みの日程枠も表示']], true],
   ];
-  const defaultFs = () => ({ season: new Set(['main']), type: new Set(['course', 'seminar', 'entry']), year: new Set(MD_YEARS), post: new Set(['on']), past: new Set() });
+  const defaultFs = () => ({ season: new Set(), type: new Set(), year: new Set(), post: new Set(), past: new Set() });
+  const pass = (set, v) => set.size === 0 || set.has(v);
   function visibleJobs() {
     const fs = M.fs;
-    return JOBS.filter((j) => hasApps(j.id) && fs.season.has(j.season) && fs.type.has(j.type)
-      && j.years.some((y) => fs.year.has(y)) && fs.post.has(j.posted ? 'on' : 'off')
+    return JOBS.filter((j) => hasApps(j.id) && pass(fs.season, j.season) && pass(fs.type, j.type)
+      && (fs.year.size === 0 || j.years.some((y) => fs.year.has(y))) && pass(fs.post, j.posted ? 'on' : 'off')
       && (!M.q || j.name.includes(M.q) || j.id.includes(M.q)))
       .sort((a, b) => b.created.localeCompare(a.created));
   }
@@ -498,7 +499,7 @@
   function closeModal() { $('ov').classList.remove('open'); $('md').classList.remove('open'); }
   function renderModal() {
     const fs = M.fs;
-    const isIS = !fs.season.has('main');
+    const isIS = fs.season.size === 1 && fs.season.has('IS');
     $('frows').innerHTML = FROWS.map(([f, label, opts]) => `<div class="frow"><span class="fl">${label}</span>${opts().map(([v, t]) => {
       const dis = f === 'type' && v === 'seminar' && isIS;
       return `<label class="cb ${dis ? 'dis' : ''}" data-f="${f}" data-v="${v}"><span class="box ${fs[f].has(v) && !dis ? 'on' : ''}"></span>${t}</label>`;
@@ -560,10 +561,8 @@
       renderModal();
       return;
     }
-    if (set.has(v)) {
-      if (set.size === 1) { toast('最後の1つは外せません'); return; }
-      set.delete(v);
-    } else set.add(v);
+    if (set.has(v)) set.delete(v); else set.add(v);
+    if (M.fs.season.size === 1 && M.fs.season.has('IS')) M.fs.type.delete('seminar');
     M.focus = null;
     renderModal();
   };
@@ -836,7 +835,7 @@
   if (location.hash === '#modal-is') { openModal(); M.fs.season = new Set(['IS']); renderModal(); }
   if (location.hash === '#modal') {
     openModal();
-    if (location.hash === '#modal') { M.fs.season = new Set(['main']); M.focus = '1234570'; M.jobs.add('1234567'); M.slots.add('1234570:none'); renderModal(); }
+    if (location.hash === '#modal') { M.focus = '1234570'; M.jobs.add('1234567'); M.slots.add('1234570:none'); renderModal(); }
   }
   if (location.hash === '#modal-all') { openModal(); toggleJob('1234570'); renderModal(); }
   if (location.hash === '#open' || location.hash === '#cal') { detailOpen = true; renderSearch(); }
